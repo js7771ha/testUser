@@ -1,7 +1,0 @@
-{
-"version": 3,
-"mappings": "AA0SC,UAQC,CAPA,WAAW,CC/RM,UAAU,CDgS3B,UAAU,CA3BgE,MAAM,CA4BhF,WAAW,CCjS0C,GAAG,CDqSxD,GAAG,CAbG,2FAA6E",
-"sources": ["../scss/helpers/_mixins.scss","../scss/fonts_early.scss"],
-"names": [],
-"file": "fonts_early.css"
-}
