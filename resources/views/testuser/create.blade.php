@@ -10,6 +10,7 @@
 
 <body>
 <div>
+{{--    {{ dd(old()) }}--}}
     <form id="usersave_form" name="usersave_form" class="form-inline" action="{{ route("testuser_store") }}" method="post" enctype="multipart/form-data">
         {{ csrf_field() }}
         <table id="original" name="original" class="table table-bordered original">
@@ -19,7 +20,7 @@
                     이름
                 </th>
                 <td>
-                    <input type="text" name="user_name[]" class="form-control user_name" maxlength="50" value="{{ old("user_name") }}">
+                    <input type="text" name="user_name[]" class="form-control user_name" maxlength="50" value="{{ old("user_name")[0] }}">
                 </td>
             </tr>
             <tr>
@@ -27,7 +28,7 @@
                     아이디
                 </th>
                 <td>
-                    <input type="text" id="user_id" name="user_id[]" class="form-control user_id" maxlength="20" value="{{ old("user_id") }}">
+                    <input type="text" id="user_id" name="user_id[]" class="form-control user_id" maxlength="20" value="{{ old("user_id")[0] }}">
                     <input type="button" name="check_btn[]" class="btn btn-success check_btn" value="아이디중복확인">
                     <span name="check_val[]" class="check_val"></span>
                     <input type="hidden" name="check_id[]" class="check_id">
@@ -55,7 +56,7 @@
                     성별
                 </th>
                 <td>
-                    <select name="user_gender[]" class="form-control">
+                    <select id="user_gender" name="user_gender[]" class="form-control">
                         <option value="__default__">선택</option>
                         <option value="1">남자</option>
                         <option value="2">여자</option>
@@ -67,7 +68,7 @@
                     나이
                 </th>
                 <td>
-                    <input type="text" name="user_age[]" class="form-control user_age" maxlength="3" value="{{ old("user_age") }}" />
+                    <input type="text" name="user_age[]" class="form-control user_age" maxlength="3" value="{{ old("user_age")[0] }}" />
                 </td>
             </tr>
             <tr>
@@ -75,7 +76,7 @@
                     전화번호
                 </th>
                 <td>
-                    <input type="text" name="user_tel[]" class="form-control user_tel" maxlength="12" value="{{ old("user_tel") }}" />
+                    <input type="text" name="user_tel[]" class="form-control user_tel" maxlength="12" value="{{ old("user_tel")[0] }}" />
                 </td>
             </tr>
             <tr>
@@ -83,9 +84,9 @@
                     이메일
                 </th>
                 <td>
-                    <input type="text" name="email[]" class="form-control email" maxlength="30" value="{{ old("email") }}" />@
-                    <input type="text" name="domain[]" class="form-control i_domain" style="display:none;">
-                    <select name="domain[]" class="form-control s_domain">
+                    <input type="text" name="email[]" class="form-control email" maxlength="30" value="{{ old("email")[0] }}" />@
+                    <input type="text" name="input_domain[]" class="form-control i_domain" style="display:none;" value="{{ old("input_domain")[0] }}">
+                    <select id="domain" name="domain[]" class="form-control s_domain">
                         <option value="__default__">선택</option>
                         <option value="user_input">직접입력</option>
                         <option value="naver.com">naver.com</option>
@@ -93,7 +94,7 @@
                         <option value="hanmail.net">hanmail.net</option>
                         <option value="nate.net">nate.com</option>
                     </select>
-                    <input type="hidden" name="user_email[]" class="user_email" value="{{ old("user_email") }}">
+                    <input type="hidden" name="user_email[]" class="user_email" value="{{ old("user_email")[0] }}">
                 </td>
             </tr>
             <tr>
@@ -101,7 +102,7 @@
                     적립금
                 </th>
                 <td>
-                    <input type="text" name="user_point[]" class="form-control user_point" maxlength="20" value="{{ old("user_point") }}" />
+                    <input type="text" name="user_point[]" class="form-control user_point" maxlength="20" value="{{ old("user_point")[0] }}" />
                 </td>
             </tr>
             <tr>
@@ -149,7 +150,8 @@
                     파일업로드
                 </th>
                 <td>
-                    <input type="file" name="user_file[]" class="form-control user_file" accept=".jpg, .png" onchange="file_check(this)">
+                    <input type="file" name="user_file[]" class="form-control user_file" accept=".jpg, .png" onclick="file_click($(this))" onchange="file_change($(this))">
+                    <span class="span_hidden" style="display: none;"></span>
                 </td>
             </tr>
             <tr>
@@ -157,7 +159,7 @@
                     비고
                 </th>
                 <td>
-                    <textarea name="user_remark[]" class="form-control user_remark" style="width: 50%">{{ old("user_remark") }}</textarea>
+                    <textarea name="user_remark[]" class="form-control user_remark" style="width: 50%">{{ old("user_remark")[0] }}</textarea>
                 </td>
             </tr>
             <tr>
@@ -174,8 +176,8 @@
     <div align="center">
         <input type="button" id="save_btn" class="btn btn-primary" value="저장하기">
         <input type="button" id="list_btn" class="btn btn-secondary" value="목록보기">
-        <input type="button" id="clone_btn" class="btn btn-warning" value="다중등록">
-        <input type="button" id="clone_remove_btn" class="btn btn-danger" value="다중등록 취소" style="display: none;">
+        <input type="button" id="clone_btn" class="btn btn-warning" value="다중등록" onclick="clone_btn_click()">
+        <input type="button" id="clone_remove_btn" class="btn btn-danger" value="다중등록 취소" style="display: none;" onclick="clone_remove_click()">
     </div>
 </div>
 </body>
@@ -206,10 +208,88 @@
         return arr.join("");
     }
 
-    function file_check(object) {
-        console.log(object.files[0]);
-        if (object.files[0] == "" || object.files[0] == undefined) {
-            console.log(1);
+    function file_click(object) {
+        let $span_hidden = object.closest("tr").find(".span_hidden");
+        let $file_hidden = $span_hidden.find(".file_hidden");
+        if ($file_hidden.length === 0) {
+            let $clone = object.clone().appendTo($span_hidden);
+            $clone.attr("name", "");
+            $clone.attr("class", "file_hidden");
+        } else {
+            $file_hidden[0].files = object[0].files;
+        }
+    }
+
+    function file_change(object) {
+        let $span_hidden = object.closest("tr").find(".span_hidden");
+        let $file_hidden = $span_hidden.find(".file_hidden");
+        if (object.val() === "" || object.val() === undefined) {
+            object[0].files = $file_hidden[0].files;
+        }
+    }
+
+    function clone_btn_click() {
+        let cloneIndex = $("[name='original']").length;
+        if (cloneIndex >= 3) {
+            alert("다중 등록은 3개까지만 가능합니다.");
+            return false;
+        }
+        let $clone = $("#original").clone(true).appendTo("#usersave_form");
+
+        // table id 값 변경
+        $clone.attr("id", "original" + cloneIndex);
+
+        // user_id 의 id 값 변경
+        $clone.find("#user_id").attr("id", "user_id" + cloneIndex);
+
+        // user_gender 값 변경
+        $clone.find("#user_gender").attr("id", "user_gender" + cloneIndex);
+
+        // domain id 값 변경
+        $clone.find("#domain").attr("id", "domain" + cloneIndex);
+
+        // user_married 라디오 id, name, label for 변경
+        $clone.find("#married1").attr("id", "married1_" + cloneIndex);
+        $clone.find(".user_married").attr("name", "user_married[" + cloneIndex + "]");
+        $clone.find(".married_label1").attr("for", "married1_" + cloneIndex);
+
+        $clone.find("#married2").attr("id", "married2_" + cloneIndex);
+        $clone.find(".user_married").attr("name", "user_married[" + cloneIndex + "]");
+        $clone.find(".married_label2").attr("for", "married2_" + cloneIndex);
+
+        // 개인정보처리 동의 체크박스 id, label for 변경
+        $clone.find("#user_check").attr("id", "user_check" + cloneIndex);
+        $clone.find(".check_label").attr("for", "user_check" + cloneIndex);
+
+        // 입력값 초기화
+        $clone.find(".user_name").val("");
+        $clone.find(".user_id").val("");
+        $clone.find(".check_val").text("");
+        $clone.find(".user_pwd").val("");
+        $clone.find(".user_pwd2").val("");
+        $clone.find(".user_age").val("");
+        $clone.find(".user_tel").val("");
+        $clone.find(".email").val("");
+        $clone.find(".i_domain").hide();
+        $clone.find(".user_point").val("");
+        $clone.find(".user_zip").val("");
+        $clone.find(".user_addr").val("");
+        $clone.find(".user_addr_detail").val("");
+        $clone.find(".user_file").val("");
+        $clone.find(".user_remark").val("");
+        $clone.find(".user_check").prop("checked", false);
+
+        $("#clone_remove_btn").show();
+    }
+
+    function clone_remove_click () {
+        let origin_index = $(".original").length-1;
+        $("#original"+origin_index).remove();
+
+        if($(".original").length <= 1) {
+            $("#clone_remove_btn").hide();
+        } else {
+            $("#clone_remove_btn").show();
         }
     }
 
@@ -226,38 +306,135 @@
             alert(msg);
         }
 
-        // 성별 old selected
-        @if(!is_null(old("user_gender")) && old("user_gender") !== "")
-            $("#user_gender > option").each(function() {
-                if("{{ old("user_gender") }}" === $(this).val()) {
-                    $(this).prop("selected", true);
-                    return false;
-                }
-            });
-        @endif
+        // 서버 validation 체크 실패 후 old 값 입력
+        @if (old() !== [] && count(old("user_name")) === 1)     // 다중 등록 없이 1개만 등록 시
 
-        // 도메인 old selected
-        @if(!is_null(old("domain")) && old("domain") !=="")
-            $("#domain > option").each(function () {
-                if("{{ old("domain") }}" === $(this).val()) {
-                    $("#domain_input").hide();
-                    $(this).prop("selected", true);
-                    return false;
-                } else {
-                    $("#domain_input").show();
-                    return false;
-                }
-            });
-        @endif
+            // 성별 old selected
+            @if(!is_null(old("user_gender")[0]) && old("user_gender")[0] !== "")
+                $("#user_gender > option").each(function() {
+                    if("{{ old("user_gender")[0] }}" === $(this).val()) {
+                        $(this).prop("selected", true);
+                        return false;
+                    }
+                });
+            @endif
 
-        // 결혼여부 old checked
-        @if(!is_null(old("user_married")) && old("user_married") !== "")
-            $("[name=user_married]").each(function() {
-                if("{{ old("user_married") }}" === $(this).val()) {
-                    $(this).prop("checked", true);
-                    return false;
-                }
-            });
+            // 도메인 old selected
+            @if(!is_null(old("domain")[0]) && old("domain")[0] !=="")
+                $("#domain > option").each(function () {
+                    let $domain_input = $(this).closest("tr").find(".i_domain");
+                    if("{{ old("domain")[0] }}" === $(this).val() && "{{ old("domain")[0] }}" !== "user_input") {
+                        $(this).prop("selected", true);
+                        $domain_input.hide();
+                        return false;
+                    } else if ("{{ old("domain")[0] }}" === $(this).val() && "{{ old("domain")[0] }}" === "user_input") {
+                        $(this).prop("selected", true);
+                        $domain_input.show();
+                        return false;
+                    }
+                });
+            @endif
+
+            // 결혼여부 old checked
+            @if(!is_null(old("user_married")[0]) && old("user_married")[0] !== "")
+                $("[name='user_married[0]']").each(function() {
+                    if("{{ old("user_married")[0] }}" === $(this).val()) {
+                        $(this).prop("checked", true);
+                        return false;
+                    }
+                });
+            @endif
+
+        @elseif (old() !== [] && count(old("user_name")) > 1)   // 다중 등록 했을 때
+            @if (count(old("user_name")) == 2)
+                clone_btn_click();
+            @elseif (count(old("user_name")) == 3)
+                clone_btn_click();
+                clone_btn_click();
+            @endif
+
+            @foreach(old("user_name") as $key => $val)
+                $(".user_name").eq("{{ $key }}").val("{{ $val }}");
+            @endforeach
+
+            @if (is_array(old("user_id")) && count(old("user_id")) > 0)
+                @foreach(old("user_id") as $key => $val)
+                    $(".user_id").eq("{{ $key }}").val("{{ $val }}");
+                @endforeach
+            @endif
+
+            @if (is_array(old("user_pwd")) && count(old("user_pwd")) > 0)
+                @foreach(old("user_pwd") as $key => $val)
+                    $(".user_pwd").eq("{{ $key }}").val("{{ $val }}");
+                @endforeach
+            @endif
+
+            @if (is_array(old("user_pwd2")) && count(old("user_pwd2")) > 0)
+                @foreach(old("user_pwd2") as $key => $val)
+                    $(".user_pwd2").eq("{{ $key }}").val("{{ $val }}");
+                @endforeach
+            @endif
+
+            @if (is_array(old("user_age")) && count(old("user_age")) > 0)
+                @foreach(old("user_age") as $key => $val)
+                    $(".user_age").eq("{{ $key }}").val("{{ $val }}");
+                @endforeach
+            @endif
+
+            @if (is_array(old("user_tel")) && count(old("user_tel")) > 0)
+                @foreach(old("user_tel") as $key => $val)
+                    $(".user_tel").eq("{{ $key }}").val("{{ $val }}");
+                @endforeach
+            @endif
+
+            @if (is_array(old("email")) && count(old("email")) > 0)
+                @foreach(old("email") as $key => $val)
+                    $(".email").eq("{{ $key }}").val("{{ $val }}");
+                @endforeach
+            @endif
+
+            @if (is_array(old("user_email")) && count(old("user_email")) > 0)
+                @foreach(old("user_email") as $key => $val)
+                    $(".user_email").eq("{{ $key }}").val("{{ $val }}");
+                @endforeach
+            @endif
+
+            @if (is_array(old("user_point")) && count(old("user_point")) > 0)
+                @foreach(old("user_point") as $key => $val)
+                    $(".user_point").eq("{{ $key }}").val("{{ $val }}");
+                @endforeach
+            @endif
+
+            @if (is_array(old("user_zip")) && count(old("user_zip")) > 0)
+                @foreach(old("user_zip") as $key => $val)
+                    $(".user_zip").eq("{{ $key }}").val("{{ $val }}");
+                @endforeach
+            @endif
+
+            @if (is_array(old("user_addr")) && count(old("user_addr")) > 0)
+                @foreach(old("user_addr") as $key => $val)
+                    $(".user_addr").eq("{{ $key }}").val("{{ $val }}");
+                @endforeach
+            @endif
+
+            @if (is_array(old("user_addr_detail")) && count(old("user_addr_detail")) > 0)
+                @foreach(old("user_addr_detail") as $key => $val)
+                    $(".user_addr_detail").eq("{{ $key }}").val("{{ $val }}");
+                @endforeach
+            @endif
+
+            @if (is_array(old("user_remark")) && count(old("user_remark")) > 0)
+                @foreach(old("user_remark") as $key => $val)
+                    $(".user_remark").eq("{{ $key }}").text("{{ $val }}");
+                @endforeach
+            @endif
+
+            @if (is_array(old("user_file")) && count(old("user_file")) > 0)
+                @foreach(old("user_file") as $key => $val)
+                    $(".user_file").eq("{{ $key }}").val("{{ $val }}");
+                @endforeach
+            @endif
+
         @endif
 
         // 아이디 중복확인 ajax
@@ -318,32 +495,6 @@
                 });
             }
         });
-
-        // 저장 시 한번만 체크할 것
-        // // 비밀번호 체크
-        // $(".user_pwd").on("keyup", function() {
-        //     let $row_pwd2 = $(this).closest("tr").next();
-        //     let $user_pwd2 = $row_pwd2.find(".user_pwd2");
-        //     let $check_pwd = $row_pwd2.find(".check_pwd");
-        //     if($user_pwd2.val() !== "") {
-        //         if ($(this).val() === $user_pwd2.val()) {
-        //             $check_pwd.text("비밀번호가 일치합니다.").css("color", "blue");
-        //         } else {
-        //             $check_pwd.text("비밀번호가 일치하지 않습니다.").css("color", "red");
-        //         }
-        //     }
-        // });
-        //
-        // // 비밀번호 확인 체크
-        // $(".user_pwd2").on("keyup", function() {
-        //     let user_pwd = $(this).closest("tr").prev().find(".user_pwd").val();
-        //     let $check_pwd = $(this).closest("tr").find(".check_pwd");
-        //     if ($(this).val() === user_pwd) {
-        //         $check_pwd.text("비밀번호가 일치합니다.").css("color", "blue");
-        //     } else {
-        //         $check_pwd.text("비밀번호가 일치하지 않습니다.").css("color", "red");
-        //     }
-        // });
 
         // 나이 숫자만 입력 가능하도록
         $(".user_age").on("keyup", function() {
@@ -483,65 +634,6 @@
                 $("#usersave_form").submit();
             } else {
                 return false;
-            }
-        });
-
-        // 다중등록 버튼 클릭 시
-        $("#clone_btn").click(function() {
-            let cloneIndex = $("[name='original']").length;
-            if (cloneIndex >= 3) {
-                alert("다중 등록은 3개까지만 가능합니다.");
-                return false;
-            }
-            let $clone = $("#original").clone(true).appendTo("#usersave_form");
-
-            // user_id 의 id 값 변경
-            $clone.attr("id", "original" + cloneIndex);
-            $clone.find("#user_id").attr("id", "user_id" + cloneIndex);
-
-            // user_married 라디오 id, name, label for 변경
-            $clone.find("#married1").attr("id", "married1_" + cloneIndex);
-            $clone.find(".user_married").attr("name", "user_married[" + cloneIndex + "]");
-            $clone.find(".married_label1").attr("for", "married1_" + cloneIndex);
-
-            $clone.find("#married2").attr("id", "married2_" + cloneIndex);
-            $clone.find(".user_married").attr("name", "user_married[" + cloneIndex + "]");
-            $clone.find(".married_label2").attr("for", "married2_" + cloneIndex);
-
-            // 개인정보처리 동의 체크박스 id, label for 변경
-            $clone.find("#user_check").attr("id", "user_check" + cloneIndex);
-            $clone.find(".check_label").attr("for", "user_check" + cloneIndex);
-
-            // 입력값 초기화
-            $clone.find(".user_name").val("");
-            $clone.find(".user_id").val("");
-            $clone.find(".check_val").text("");
-            $clone.find(".user_pwd").val("");
-            $clone.find(".user_pwd2").val("");
-            $clone.find(".user_age").val("");
-            $clone.find(".user_tel").val("");
-            $clone.find(".email").val("");
-            $clone.find(".i_domain").hide();
-            $clone.find(".user_point").val("");
-            $clone.find(".user_zip").val("");
-            $clone.find(".user_addr").val("");
-            $clone.find(".user_addr_detail").val("");
-            $clone.find(".user_file").val("");
-            $clone.find(".user_remark").val("");
-            $clone.find(".user_check").prop("checked", false);
-
-            $("#clone_remove_btn").show();
-        });
-
-        // 다중등록 폼 지우기 버튼
-        $("#clone_remove_btn").click(function() {
-            let origin_index = $(".original").length-1;
-            $("#original"+origin_index).remove();
-
-            if($(".original").length <= 1) {
-                $("#clone_remove_btn").hide();
-            } else {
-                $("#clone_remove_btn").show();
             }
         });
 

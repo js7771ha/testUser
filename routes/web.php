@@ -26,9 +26,11 @@ Route::get('/delete/{user_idx?}', 'testuser\TestUserController@destroy')->name('
 Route::POST('/delete/all', 'testuser\TestUserController@allDestroy')->name('testuser_alldestroy');      // 일괄 삭제
 Route::post('/restore', 'testuser\TestUserController@restore')->name('testuser_restore');               // 복구
 Route::post('/restore/all', 'testuser\TestUserController@allRestore')->name('testuser_allrestore');     // 전체 복구
+Route::get('/pwd_check/{user_idx?}', 'testuser\TestUserController@pwdCheckView')->name('testuser_pwdcheckview');     // 비밀번호 확인 입력 폼
 
 Route::post('/ajax/id_check', 'testuser\TestUserController@idCheck')->name('testuser_idcheck');         // 아이디 체크
 Route::post('/ajax/pwd_check', 'testuser\TestUserController@pwdCheck')->name('testuser_pwdcheck');      // 비밀번호 체크
 
 Route::get('/ajax/upindex', 'testuser\TestUserController@upIndex')->name('testuser_upindex');           // 순번변경(위)
 Route::get('/ajax/downindex', 'testuser\TestUserController@downIndex')->name('testuser_downindex');     // 순번변경(아래)
+

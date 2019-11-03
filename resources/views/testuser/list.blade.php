@@ -178,7 +178,7 @@
 {{--                    <td>{{ $list->user_out_idx }}</td>--}}
                     <td class="td_col">{{ $list->user_idx }}</td>
                     <td>@if($list->user_state=="1") 사용 @elseif($list->user_state=="2") 휴면 @else - @endif</td>
-                    <td><a href="{{ route("testuser_detail", ["user_id"=>$list->user_idx]) }}" class="list_user_name" onclick="list_user_name_click('{{ $list->user_idx }}')">{{ $list->user_name }}</a></td>
+                    <td><span class="list_user_name" onclick="list_user_name_click('{{ $list->user_idx }}')" style="cursor:pointer;">{{ $list->user_name }}</span></td>
                     <td>{{ $list->user_id }}</td>
                     <td>{{ $list->user_gender=="1" ? "남자" : "여자" }}</td>
                     <td>{{ $list->user_age }}</td>
@@ -186,8 +186,9 @@
                     <td>{{ $list->user_email }}</td>
                     <td>{{ number_format($list->user_point) }}</td>
                     <td>{{ $list->created_at }}</td>
-                    <td><a href="{{ route("testuser_edit", ["user_idx"=>$list->user_idx]) }}" class="btn btn-success modify_btn" onclick="modify_btn_click('{{ $list->user_idx }}')">수정</a></td>
-                    <td><input type="button" name="del_btn" class="btn btn-danger" value="탈퇴" onclick="del_click({{ $list->user_idx }})"></td>
+                    <td><input type="button" name="modify_btn" class="btn btn-success" value="수정" onclick="modify_btn_click('{{ $list->user_idx }}')"></td>
+                    <td><input type="button" name="del_btn" class="btn btn-danger" value="탈퇴" onclick="del_btn_click('{{ $list->user_idx }}')"></td>
+{{--                    <td><input type="button" name="del_btn" class="btn btn-danger" value="탈퇴" onclick="del_click({{ $list->user_idx }})"></td>--}}
                     <td>
                         <input type="button" name="up_btn" class="btn-sm btn-outline-warning up_btn" value="▲" onclick="up_index_click($(this), '{{ $list->user_out_idx }}', '{{ $list->user_idx }}', '{{ $key+1 }}')">
                         <input type="button" name="down_btn" class="btn-sm btn-outline-warning down_btn" value="▼" onclick="down_index_click($(this), '{{ $list->user_out_idx }}', '{{ $list->user_idx }}', '{{ $user_list->perPage() }}', '{{ $key+1 }}', '{{ $user_list->total() }}')">
@@ -352,36 +353,36 @@
 
 <script>
 
-    // 탈퇴 버튼 onclick function
-    function del_click (idx) {
-        let input_pwd = prompt("비밀번호를 입력해주세요.");
+    {{--// 탈퇴 버튼 onclick function--}}
+    {{--function del_click (idx) {--}}
+    {{--    let input_pwd = prompt("비밀번호를 입력해주세요.");--}}
 
-        if (input_pwd == null || input_pwd == undefined || input_pwd == "") {
-            alert("비밀번호가 입력되지 않았습니다.");
-            return false;
-        } else {
-            // 비밀번호 체크 ajax
-            $.ajax({
-                type : "POST",
-                url : "{{ route("testuser_pwdcheck") }}",
-                data : {
-                    "user_idx" : idx,
-                    "user_pwd" : input_pwd,
-                    _token : "{{ csrf_token() }}"
-                },
-                error : function(request, status, error) {
-                    alert("message : " + request.responseJSON.message + ", status : " + status + ", error : " + error);
-                },
-                complete : function (response) {
-                    alert(response.responseJSON.message);
-                    // 비밀번호 체크 ok 후 탈퇴 처리
-                    if(response.responseJSON.result === "pwd_check_ok") {
-                        location.href = "{{ route("testuser_destroy") }}/"+idx+location.search;
-                    }
-                }
-            });
-        }
-    }
+    {{--    if (input_pwd == null || input_pwd == undefined || input_pwd == "") {--}}
+    {{--        alert("비밀번호가 입력되지 않았습니다.");--}}
+    {{--        return false;--}}
+    {{--    } else {--}}
+    {{--        // 비밀번호 체크 ajax--}}
+    {{--        $.ajax({--}}
+    {{--            type : "POST",--}}
+    {{--            url : "{{ route("testuser_pwdcheck") }}",--}}
+    {{--            data : {--}}
+    {{--                "user_idx" : idx,--}}
+    {{--                "user_pwd" : input_pwd,--}}
+    {{--                _token : "{{ csrf_token() }}"--}}
+    {{--            },--}}
+    {{--            error : function(request, status, error) {--}}
+    {{--                alert("message : " + request.responseJSON.message + ", status : " + status + ", error : " + error);--}}
+    {{--            },--}}
+    {{--            complete : function (response) {--}}
+    {{--                alert(response.responseJSON.message);--}}
+    {{--                // 비밀번호 체크 ok 후 탈퇴 처리--}}
+    {{--                if(response.responseJSON.result === "pwd_check_ok") {--}}
+    {{--                    location.href = "{{ route("testuser_destroy") }}/"+idx+location.search;--}}
+    {{--                }--}}
+    {{--            }--}}
+    {{--        });--}}
+    {{--    }--}}
+    {{--}--}}
 
     // 탈퇴계정 리스트 보기 클릭 시
     function del_list_click () {
@@ -453,13 +454,21 @@
         }
     }
 
+    // 각 행의 수정 버튼 클릭 시
     function modify_btn_click (user_idx) {
-        $(this).attr("href", "{{ route("testuser_edit") }}"+user_idx+location.search);
+        location.href = "{{ route("testuser_edit") }}/"+user_idx+location.search;
     }
 
+    // 각 행의 탈퇴 클릭 시
+    function del_btn_click (user_idx) {
+        location.href = "{{ route("testuser_pwdcheckview") }}/"+user_idx+location.search;
+    };
+
+    // 각 행의 유저 이름 클릭 시
     function list_user_name_click (user_idx) {
-        $(this).attr("href", "{{ route("testuser_detail") }}"+user_idx+location.search);
+        location.href = "{{ route("testuser_detail") }}/"+user_idx+location.search;
     }
+
 
     $(document).ready(function() {
 
@@ -670,19 +679,6 @@
             $(this).attr("href", "{{ route("testuser_create") }}"+location.search);
         });
 
-
-        {{--        $("#all_destroy").click(function () {--}}
-        {{--            var idx_arr = [];--}}
-        {{--            var i = 0;--}}
-        {{--            $("[name=list_select]:checked").each(function () {--}}
-        {{--                idx_arr[i] = $(this).closest("tr").find("td:nth-child(3)").text();--}}
-        {{--                i++;--}}
-        {{--            });--}}
-
-        {{--            $("#search_form").attr("action", "{{ route("testuser_alldestroy") }}");--}}
-        {{--            // console.log($("#search_form"));--}}
-        {{--            $("#search_form").submit();--}}
-        {{--        });--}}
 
     });
 </script>

@@ -9,7 +9,7 @@
 </head>
 <body>
 <div>
-    <form id="usermod_form" name="usermod_form" class="form-inline" action="{{ route("testuser_update", ["user_idx" => $detail_info->user_idx]) }}" method="POST">
+    <form id="usermod_form" name="usermod_form" class="form-inline" action="{{ route("testuser_update", ["user_idx" => $detail_info->user_idx]) }}" method="POST" enctype="multipart/form-data">
         {{ csrf_field() }}
         <table class="table table-bordered">
             <tbody>
@@ -136,6 +136,28 @@
                 </td>
             </tr>
             <tr>
+                <th>
+                    업로드파일
+                </th>
+                <td>
+                    @if ($detail_info->file_save_name != "")
+                        <a href="/uploads/{{ $detail_info->file_save_name }}" id="file_save_name" download>
+                            <img src="/uploads/{{ $detail_info->file_save_name }}" style="max-width: 100px;max-height: 100px;">
+                        </a>
+                        <span id="input_file_hidden" style="display: none">
+                            <input type="file" id="user_file" name="user_file" class="form-control user_file" accept=".jpg, .png" onclick="file_click($(this))" onchange="file_change($(this))">
+                            <span class="span_hidden" style="display: none;"></span>
+                        </span>
+                        <input type="button" id="btn_file_restore" href="" class="btn-sm btn-dark" value="새로등록">
+                    @else
+                        <input type="file" id="user_file" name="user_file" class="form-control user_file" accept=".jpg, .png" onclick="file_click($(this))" onchange="file_change($(this))">
+                        <span class="span_hidden" style="display: none;"></span>
+                    @endif
+                    <input type="hidden" name="file_idx" value="{{ $detail_info->file_idx }}">
+                    <input type="hidden" name="file_save_name" value="{{ $detail_info->file_save_name }}">
+                </td>
+            </tr>
+            <tr>
                 <th width="20%">
                     비고
                 </th>
@@ -170,7 +192,7 @@
             <tr>
                 <td colspan="2" align="center">
                     <input type="button" id="save_btn" class="btn btn-success" value="수정하기">
-                    <input type="button" id="del_btn" class="btn btn-danger" value="탈퇴하기">
+{{--                    <input type="button" id="del_btn" class="btn btn-danger" value="탈퇴하기">--}}
                     <input type="button" id="list_btn" class="btn btn-secondary" value="목록보기">
                 </td>
             </tr>
@@ -203,6 +225,29 @@
         }
         return arr.join("");
     }
+
+    // 파일 선택 클릭 시 기존 파일 복제
+    function file_click(object) {
+        let $span_hidden = object.closest("tr").find(".span_hidden");
+        let $file_hidden = $span_hidden.find(".file_hidden");
+        if ($file_hidden.length === 0) {
+            let $clone = object.clone().appendTo($span_hidden);
+            $clone.attr("name", "");
+            $clone.attr("class", "file_hidden");
+        } else {
+            $file_hidden[0].files = object[0].files;
+        }
+    }
+
+    // 파일 변경 시 취소하면 복제 해놓은 파일 입력
+    function file_change(object) {
+        let $span_hidden = object.closest("tr").find(".span_hidden");
+        let $file_hidden = $span_hidden.find(".file_hidden");
+        if (object.val() === "" || object.val() === undefined) {
+            object[0].files = $file_hidden[0].files;
+        }
+    }
+
 
     $(document).ready(function() {
 
@@ -270,6 +315,7 @@
                     return false;
                 }
             });
+
         @endif
 
         // 나이 숫자만 입력
@@ -308,6 +354,21 @@
                 $("#pwd_btn").val("비밀번호 변경하기");
             }
         });
+
+        // 파일 새로등록 버튼 클릭 시
+        $("#btn_file_restore").click(function() {
+            if ($("#btn_file_restore").val() == "새로등록") {
+                $("#input_file_hidden").show();
+                $("#file_save_name").hide();
+                $("#btn_file_restore").val("등록 취소");
+            } else {
+                $("#input_file_hidden").hide();
+                $("#file_save_name").show();
+                $("#btn_file_restore").val("새로등록");
+            }
+        });
+
+
 
         // 수정하기 버튼 클릭 시
         $("#save_btn").click(function() {
@@ -366,38 +427,42 @@
             }
         });
 
-        // 탈퇴하기 클릭 시
-        $("#del_btn").click(function() {
-            let pwd = $("[name=check_pwd]").val();
-            if (pwd == "") {
-                alert("비밀번호를 입력해주세요.");
-                return false;
-            } else {
-                if(confirm("탈퇴 처리하시겠습니까?") === true) {
-                    $.ajax({
-                        type : "POST",
-                        url : "{{ route("testuser_pwdcheck") }}",
-                        data : {
-                            "user_idx" : "{{ $detail_info->user_idx }}",
-                            "user_pwd" : pwd,
-                            _token: "{{ csrf_token() }}"
-                        },
-                        error : function(request, status, error) {
-                            alert("message : " + request.responseJSON.message + ", status : " + status + ", error : " + error);
-                        },
-                        complete : function (response) {
-                            alert(response.responseJSON.message);
-                            if(response.responseJSON.result === "pwd_check_ok") {
-                                location.href = "{{ route("testuser_destroy", ["user_idx"=>$detail_info->user_idx]) }}"+location.search;
-                            }
-                        }
-                    });
+        {{--// 탈퇴하기 클릭 시--}}
+        {{--$("#del_btn").click(function() {--}}
+        {{--    location.href = "{{ route("testuser_pwdcheckview", ["user_idx" => $detail_info->user_idx]) }}" + location.search;--}}
+        {{--});--}}
+        {{--// 탈퇴하기 클릭 시--}}
+        {{--$("#del_btn").click(function() {--}}
+        {{--    let pwd = $("[name=check_pwd]").val();--}}
+        {{--    if (pwd == "") {--}}
+        {{--        alert("비밀번호를 입력해주세요.");--}}
+        {{--        return false;--}}
+        {{--    } else {--}}
+        {{--        if(confirm("탈퇴 처리하시겠습니까?") === true) {--}}
+        {{--            $.ajax({--}}
+        {{--                type : "POST",--}}
+        {{--                url : "{{ route("testuser_pwdcheck") }}",--}}
+        {{--                data : {--}}
+        {{--                    "user_idx" : "{{ $detail_info->user_idx }}",--}}
+        {{--                    "user_pwd" : pwd,--}}
+        {{--                    _token: "{{ csrf_token() }}"--}}
+        {{--                },--}}
+        {{--                error : function(request, status, error) {--}}
+        {{--                    alert("message : " + request.responseJSON.message + ", status : " + status + ", error : " + error);--}}
+        {{--                },--}}
+        {{--                complete : function (response) {--}}
+        {{--                    alert(response.responseJSON.message);--}}
+        {{--                    if(response.responseJSON.result === "pwd_check_ok") {--}}
+        {{--                        location.href = "{{ route("testuser_destroy", ["user_idx"=>$detail_info->user_idx]) }}"+location.search;--}}
+        {{--                    }--}}
+        {{--                }--}}
+        {{--            });--}}
 
-                } else {
-                    return false;
-                }
-            }
-        });
+        {{--        } else {--}}
+        {{--            return false;--}}
+        {{--        }--}}
+        {{--    }--}}
+        {{--});--}}
 
         // 목록보기 클릭 시
         $("#list_btn").click(function() {

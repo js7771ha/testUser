@@ -9,8 +9,7 @@
 </head>
 <body>
 <div>
-    <form id="usermod_form" name="usermod_form" class="form-inline" action="{{ route("testuser_edit", ["user_idx" => $detail_info->user_idx]) }}" method="GET">
-        {{ csrf_field() }}
+{{--    <form id="usermod_form" name="usermod_form" class="form-inline" action="{{ route("testuser_edit", ["user_idx" => $detail_info->user_idx]) }}" method="GET">--}}
         <table class="table table-bordered">
             <tbody>
             <tr>
@@ -25,7 +24,7 @@
                 <th width="200px;">
                     이름
                 </th>
-                <td>
+                <td style="max-width: 700px;">
                     {{ $detail_info->user_name_decrypt." (".$detail_info->user_name.")" }}
                 </td>
             </tr>
@@ -98,7 +97,11 @@
                     등록 파일
                 </th>
                 <td>
-
+                    @if($detail_info->file_save_name != "")
+                        <a href="/uploads/{{ $detail_info->file_save_name }}" download>
+                            <img src="/uploads/{{ $detail_info->file_save_name }}" style="max-width: 500px;max-height: 500px;"><br>
+                        </a>
+                    @endif
                 </td>
             </tr>
             <tr>
@@ -118,7 +121,7 @@
             </tr>
             </tbody>
         </table>
-    </form>
+{{--    </form>--}}
 </div>
 </body>
 
@@ -128,40 +131,12 @@
 
         // 수정하기 버튼 클릭 시
         $("#save_btn").click(function() {
-            $("#usermod_form").submit();
+            location.href = "{{ route("testuser_edit", ["user_idx" => $detail_info->user_idx]) }}" + location.search;
         });
 
         // 탈퇴하기 클릭 시
         $("#del_btn").click(function() {
-            let pwd = $("[name=check_pwd]").val();
-            if (pwd == "") {
-                alert("비밀번호를 입력해주세요.");
-                return false;
-            } else {
-                if(confirm("탈퇴 처리하시겠습니까?") === true) {
-                    $.ajax({
-                        type : "POST",
-                        url : "{{ route("testuser_pwdcheck") }}",
-                        data : {
-                            "user_idx" : "{{ $detail_info->user_idx }}",
-                            "user_pwd" : pwd,
-                            _token: "{{ csrf_token() }}"
-                        },
-                        error : function(request, status, error) {
-                            alert("message : " + request.responseJSON.message + ", status : " + status + ", error : " + error);
-                        },
-                        complete : function (response) {
-                            alert(response.responseJSON.message);
-                            if(response.responseJSON.result === "pwd_check_ok") {
-                                location.href = "{{ route("testuser_destroy", ["user_idx"=>$detail_info->user_idx]) }}"+location.search;
-                            }
-                        }
-                    });
-
-                } else {
-                    return false;
-                }
-            }
+            location.href = "{{ route("testuser_pwdcheckview", ["user_idx" => $detail_info->user_idx]) }}" + location.search;
         });
 
         // 목록보기 클릭 시

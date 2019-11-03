@@ -9,13 +9,15 @@ use Illuminate\Support\Facades\DB;
 
 class TestFile extends Model
 {
-    protected $table = "test_file";
+    protected $table = "user_files";
     protected $primaryKey = "file_idx";
 
-    public $timestamps = false;
+    public function saveFile($file_info) {
+        $this->insert($file_info);
+    }
 
-    public function saveFile() {
-
+    public function updateFile($file_info, $id) {
+        $this->where("file_idx", "=", $id)->update($file_info);
     }
 
 }

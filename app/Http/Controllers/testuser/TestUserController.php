@@ -3,9 +3,11 @@
 namespace App\Http\Controllers\testuser;
 
 use App\Http\Controllers\Controller;
+use App\models\testfile\TestFile;
 use App\models\testuser\TestUser;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 
@@ -291,8 +293,7 @@ class TestUserController extends Controller
     {
         // 저장하기
 
-        dd($request->all());
-//        $this->fileSave($request->file("user_file")[0], 1);
+        $this->fileSave($request->file("user_file")[0], 1);
 
         $rules = [
             "user_name.*" => "required",
@@ -303,7 +304,8 @@ class TestUserController extends Controller
             "user_tel.*" => "required|Numeric",
             "user_email.*" => "required|email",
             "user_point.*" => "required",
-            "user_zip.*" => "required|Numeric"
+            "user_zip.*" => "required|Numeric",
+            "user_file.*" => "mimes:jpeg,png,jpg|max:3072"
         ];
 
         $messages = [
@@ -320,25 +322,16 @@ class TestUserController extends Controller
             "user_email.*.email" => "이메일 형식이 올바르지 않습니다.",
             "user_point.*.required" => "적립금을 입력해주세요.",
             "user_zip.*.required" => "우편번호를 입력해주세요.",
-            "user_zip.*.Numeric" => "우편번호는 숫자만 입력할 수 있습니다."
+            "user_zip.*.Numeric" => "우편번호는 숫자만 입력할 수 있습니다.",
+            "user_file.*.mimes" => "등록할 수 없는 확장자 입니다. (jpg, png만 가능)",
+            "user_file.*.max" => "3MB가 넘는 이미지는 등록할 수 없습니다."
         ];
 
         $validator = Validator::make($request->all(), $rules, $messages);
 
         if ($validator->fails()) {
             return redirect()->route("testuser_create")
-                ->withErrors($validator);
-        }
-
-        if (!is_null($request->file("user_file"))) {
-            foreach ($request->file("user_file") as $item) {
-                if ($item->getClientMimeType() != "image/png" && $item->getClientMimeType() != "image/jpeg") {
-                    return back()->with("message", "jpg, png 두 개의 확장명만 등록할 수 있습니다.");
-                }
-                if ($item->getSize() > 3145728) {
-                    return back()->with("message", "3MB가 넘는 이미지는 등록할 수 없습니다.");
-                }
-            }
+                ->withErrors($validator)->withInput();
         }
 
         DB::beginTransaction();
@@ -375,7 +368,7 @@ class TestUserController extends Controller
                 $user_info["user_zip"] = $request->input("user_zip")[$key];
                 $user_info["user_addr"] = $request->input("user_addr")[$key];
                 $user_info["user_addr_detail"] = $request->input("user_addr_detail")[$key];
-                $user_info["user_out_idx"] = $user->getCountStateUseSave([self::ACCOUNT, self::DORMANCY]);
+                $user_info["user_out_idx"] = $user->getCountStateUseSave();
                 $user_info["user_out_idx"] += 1;
 
                 $user_idx = $user->saveUser($user_info);
@@ -386,9 +379,9 @@ class TestUserController extends Controller
                 }
 
                 // 파일 DB 저장
-//                if (!empty($request->file("user_file")[$key])) {
-//                    $this->fileSave($request->file("user_file")[$key], $user_idx);
-//                }
+                if (!empty($request->file("user_file")[$key])) {
+                    $this->fileSave($request->file("user_file")[$key], $user_idx);
+                }
             }
             DB::commit();
         } catch (\Exception $exception) {
@@ -410,13 +403,15 @@ class TestUserController extends Controller
             abort(404);
         }
 
-        dd($file);
-        $file_info["file_origin_name"] = $file->getClientOriginalName();
-        $file_info["file_save_name"] = "";
+        $file_extension = $file->getClientOriginalExtension();
         $file_info["user_idx"] = $user_idx;
+        $file_info["file_original_name"] = $file->getClientOriginalName();
+        $file_info["file_save_name"] = md5_file($file).'.'.$file_extension;
 
-        $path = 'storage/image';
-        $file->move($path, $file_info["file_save_name"]);
+        Storage::disk('local')->put($file_info["file_save_name"],  File::get($file));
+
+        $fileModel = new TestFile();
+        $fileModel->saveFile($file_info);
     }
 
 
@@ -424,6 +419,7 @@ class TestUserController extends Controller
      * 회원 상세정보 view 페이지
      *
      * @param $id
+     * @param Request $request
      * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
      */
     public function detail($id)
@@ -449,7 +445,7 @@ class TestUserController extends Controller
      * @param int $id
      * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
      */
-    public function edit(int $id = 0)
+    public function edit(Request $request, int $id = 0)
     {
         if (!is_numeric($id) && $id <= 0) {
             abort(404);
@@ -488,6 +484,7 @@ class TestUserController extends Controller
             "user_tel" => "required|Numeric",
             "user_email" => "required|email",
             "user_point" => "required",
+//            "user_file" => "mimes:jpeg,png,jpg|max:3072"
         ];
         $messages = [
             "user_gender.required" => "성별을 선택해주세요.",
@@ -497,7 +494,9 @@ class TestUserController extends Controller
             "user_tel.integer" => "전화번호는 숫자만 입력할 수 있습니다.",
             "user_email.required" => "이메일을 입력해주세요.",
             "user_email.email" => "이메일 형식이 올바르지 않습니다.",
-            "user_point.required" => "적립금을 입력해주세요."
+            "user_point.required" => "적립금을 입력해주세요.",
+            "user_file.mimes" => "등록할 수 없는 확장자 입니다. (jpg, png만 가능)",
+            "user_file.max" => "3MB가 넘는 이미지는 등록할 수 없습니다."
         ];
         $validator = Validator::make($request->all(), $rules, $messages);
 
@@ -523,7 +522,6 @@ class TestUserController extends Controller
             return back()->withInput()->with("message", "변경할 " . config("test_user.test_con.message.not_match_pwd"));
         }
 
-//        dd($request->all());
         DB::beginTransaction();
         try {
             $queryStr = $request->query();
@@ -550,6 +548,16 @@ class TestUserController extends Controller
             $user_info["updated_at"] = $now->format("Y-m-d H:i:s");
 
             $result = $user->modUser($user_info, $id);
+
+            // 파일 DB 업데이트
+            if (empty($request->input("file_idx"))) {
+                $this->fileSave($request->file("user_file"), $id);
+            } else if (!empty($request->input("file_idx"))
+                    && !is_null($request->file("user_file"))
+                    && $request->file("user_file") != "") {
+                $this->fileUpdate($request->file("user_file"), $request->input("file_idx"), $request->input("file_save_name"));
+            }
+
             DB::commit();
         } catch (\Exception $exception) {
             DB::rollBack();
@@ -559,6 +567,30 @@ class TestUserController extends Controller
 
         return redirect()->route("testuser_index", $queryStr)->with("message", config("test_user.test_con.message.modify"));
     }
+
+
+    /**
+     * @param $file
+     * @param $file_idx
+     * @param $file_save_name
+     */
+    public function fileUpdate($file, $file_idx=0, $file_save_name="")
+    {
+        if (!is_numeric($file_idx) && $file_idx <= 0) {
+            abort(404);
+        }
+
+        $file_extension = $file->getClientOriginalExtension();
+        $file_info["file_original_name"] = $file->getClientOriginalName();
+        $file_info["file_save_name"] = md5_file($file).'.'.$file_extension;
+
+        Storage::disk("local")->delete($file_save_name);
+        Storage::disk("local")->put($file_info["file_save_name"],  File::get($file));
+
+        $fileModel = new TestFile();
+        $fileModel->updateFile($file_info, $file_idx);
+    }
+
 
     /**
      * 삭제
@@ -733,13 +765,24 @@ class TestUserController extends Controller
         return response()->json($res);
     }
 
+
+    /**
+     * 비밀번호 체크 view 페이지
+     *
+     * @param $id
+     * @param \Illuminate\Http\Request $request
+     * @return \Illuminate\Http\Response
+     */
+    function pwdCheckView (Request $request, $id) {
+        return view("testuser.checkpwd")->with("user_idx", $id);
+    }
+
     /**
      * 비밀번호 체크
      *
      * @param int $id
      * @param int $pwd
-     * @return boolean
-     * @throws
+     * @return boolean $pwd_check
      */
     public function checkPwd($id, $pwd)
     {

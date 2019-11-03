@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\DB;
 
 class TestUser extends Model
 {
-    protected $table = "test_user";
+    protected $table = "test_users";
     protected $primaryKey = "user_idx";
 
     public $timestamps = false;
@@ -190,7 +190,7 @@ class TestUser extends Model
         }
 
         $data = $this->select(
-            "user_idx",
+            "test_users.user_idx",
             "user_state",
             "user_name",
             "user_id",
@@ -205,10 +205,16 @@ class TestUser extends Model
             "user_addr",
             "user_addr_detail",
             "user_remark",
-            "created_at",
-            "updated_at"
+            "test_users.created_at",
+            "test_users.updated_at",
+            "user_files.file_idx",
+            "user_files.file_save_name",
+            "user_files.file_original_name"
         )
-            ->where("user_idx", "=", $user_idx)
+            ->leftjoin("user_files", function($join) {
+                $join->on("test_users.user_idx", "=", "user_files.user_idx");
+            })
+            ->where("test_users.user_idx", "=", $user_idx)
             ->get()
             ->first();
 
@@ -355,7 +361,7 @@ class TestUser extends Model
      * @param array $state
      * @return mixed
      */
-    public function getCountStateUseSave(array $state)
+    public function getCountStateUseSave()
     {
         $count = $this->select("user_idx")->get()->count();
         return $count;
