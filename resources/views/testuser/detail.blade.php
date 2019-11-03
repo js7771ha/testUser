@@ -20,7 +20,7 @@
             </td>
         </tr>
         <tr>
-            <th width="200px;">
+            <th width="200px;" style="vertical-align: middle">
                 이름
             </th>
             <td style="max-width: 700px;">
@@ -92,7 +92,7 @@
             </td>
         </tr>
         <tr>
-            <th>
+            <th style="vertical-align: middle">
                 등록 파일
             </th>
             <td>

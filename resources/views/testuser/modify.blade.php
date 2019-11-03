@@ -136,7 +136,7 @@
                 </td>
             </tr>
             <tr>
-                <th>
+                <th style="vertical-align: middle">
                     업로드파일
                 </th>
                 <td>
