@@ -19,8 +19,8 @@ Route::get('/list', 'testuser\TestUserController@index')->name('testuser_index')
 Route::get('/list/del', 'testuser\TestUserController@indexDel')->name('testuser_indexdel');             // 삭제 리스트
 Route::get('/create', 'testuser\TestUserController@create')->name('testuser_create');                   // 신규 등록 폼
 Route::post('/store', 'testuser\TestUserController@store')->name('testuser_store');                     // 등록
-Route::get('/detail/{user_idx?}', 'testuser\TestUserController@detail')->name('testuser_detail');        // user 상세정보
-Route::get('/edit/{user_idx?}', 'testuser\TestUserController@edit')->name('testuser_edit');              // user 상세정보 수정 폼
+Route::get('/detail/{user_idx?}', 'testuser\TestUserController@detail')->name('testuser_detail');       // user 상세정보
+Route::get('/edit/{user_idx?}', 'testuser\TestUserController@edit')->name('testuser_edit');             // user 상세정보 수정 폼
 Route::post('/update/{user_idx}', 'testuser\TestUserController@update')->name('testuser_update');       // 업데이트
 Route::get('/delete/{user_idx?}', 'testuser\TestUserController@destroy')->name('testuser_destroy');     // 삭제
 Route::POST('/delete/all', 'testuser\TestUserController@allDestroy')->name('testuser_alldestroy');      // 일괄 삭제
