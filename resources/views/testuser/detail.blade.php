@@ -9,119 +9,117 @@
 </head>
 <body>
 <div>
-{{--    <form id="usermod_form" name="usermod_form" class="form-inline" action="{{ route("testuser_edit", ["user_idx" => $detail_info->user_idx]) }}" method="GET">--}}
-        <table class="table table-bordered">
-            <tbody>
-            <tr>
-                <th width="200px;">
-                    상태
-                </th>
-                <td>
-                    {{ $detail_info->user_state == "1" ? "사용계정" : "휴면계정" }}
-                </td>
-            </tr>
-            <tr>
-                <th width="200px;">
-                    이름
-                </th>
-                <td style="max-width: 700px;">
-                    {{ $detail_info->user_name_decrypt." (".$detail_info->user_name.")" }}
-                </td>
-            </tr>
-            <tr>
-                <th width="200px;">
-                    아이디
-                </th>
-                <td>
-                    {{ $detail_info->user_id }}
-                </td>
-            </tr>
-            <tr>
-                <th width="200px;">
-                    성별
-                </th>
-                <td>
-                    {{ $detail_info->user_gender == "1" ? "남자" : "여자" }}
-                </td>
-            </tr>
-            <tr>
-                <th width="200px;">
-                    나이
-                </th>
-                <td>
-                    {{ $detail_info->user_age }} 세
-                </td>
-            </tr>
-            <tr>
-                <th width="200px;">
-                    전화번호
-                </th>
-                <td>
-                    {{ $detail_info->user_tel_decrypt }}
-                </td>
-            </tr>
-            <tr>
-                <th width="200px;">
-                    이메일
-                </th>
-                <td>
-                    {{ $detail_info->user_email_decrypt }}
-                </td>
-            </tr>
-            <tr>
-                <th width="200px;">
-                    적립금
-                </th>
-                <td>
-                    {{ $detail_info->user_point }} 원
-                </td>
-            </tr>
-            <tr>
-                <th width="200px;">
-                    결혼 여부
-                </th>
-                <td>
-                    {{ $detail_info->user_married == "1" ? "미혼" : "기혼" }}
-                </td>
-            </tr>
-            <tr>
-                <th width="200px;">
-                    주소
-                </th>
-                <td>
-                    {{ "(".$detail_info->user_zip.") ".$detail_info->user_addr." ".$detail_info->user_addr_detail }}
-                </td>
-            </tr>
-            <tr>
-                <th>
-                    등록 파일
-                </th>
-                <td>
-                    @if($detail_info->file_save_name != "")
-                        <a href="/uploads/{{ $detail_info->file_save_name }}" download>
-                            <img src="/uploads/{{ $detail_info->file_save_name }}" style="max-width: 500px;max-height: 500px;"><br>
-                        </a>
-                    @endif
-                </td>
-            </tr>
-            <tr>
-                <th width="200px;">
-                    비고
-                </th>
-                <td>
-                    {{ $detail_info->user_remark }}
-                </td>
-            </tr>
-            <tr>
-                <td colspan="2" align="center">
-                    <input type="button" id="save_btn" class="btn btn-success" value="수정하기">
-                    <input type="button" id="del_btn" class="btn btn-danger" value="탈퇴하기">
-                    <input type="button" id="list_btn" class="btn btn-secondary" value="목록보기">
-                </td>
-            </tr>
-            </tbody>
-        </table>
-{{--    </form>--}}
+    <table class="table table-bordered">
+        <tbody>
+        <tr>
+            <th width="200px;">
+                상태
+            </th>
+            <td>
+                {{ $detail_info->user_state == "1" ? "사용계정" : "휴면계정" }}
+            </td>
+        </tr>
+        <tr>
+            <th width="200px;">
+                이름
+            </th>
+            <td style="max-width: 700px;">
+                {{ $detail_info->user_name_decrypt." (".$detail_info->user_name.")" }}
+            </td>
+        </tr>
+        <tr>
+            <th width="200px;">
+                아이디
+            </th>
+            <td>
+                {{ $detail_info->user_id }}
+            </td>
+        </tr>
+        <tr>
+            <th width="200px;">
+                성별
+            </th>
+            <td>
+                {{ $detail_info->user_gender == "1" ? "남자" : "여자" }}
+            </td>
+        </tr>
+        <tr>
+            <th width="200px;">
+                나이
+            </th>
+            <td>
+                {{ $detail_info->user_age }} 세
+            </td>
+        </tr>
+        <tr>
+            <th width="200px;">
+                전화번호
+            </th>
+            <td>
+                {{ $detail_info->user_tel_decrypt }}
+            </td>
+        </tr>
+        <tr>
+            <th width="200px;">
+                이메일
+            </th>
+            <td>
+                {{ $detail_info->user_email_decrypt }}
+            </td>
+        </tr>
+        <tr>
+            <th width="200px;">
+                적립금
+            </th>
+            <td>
+                {{ $detail_info->user_point }} 원
+            </td>
+        </tr>
+        <tr>
+            <th width="200px;">
+                결혼 여부
+            </th>
+            <td>
+                {{ $detail_info->user_married == "1" ? "미혼" : "기혼" }}
+            </td>
+        </tr>
+        <tr>
+            <th width="200px;">
+                주소
+            </th>
+            <td>
+                {{ "(".$detail_info->user_zip.") ".$detail_info->user_addr." ".$detail_info->user_addr_detail }}
+            </td>
+        </tr>
+        <tr>
+            <th>
+                등록 파일
+            </th>
+            <td>
+                @if($detail_info->file_save_name != "")
+                    <a href="/uploads/{{ $detail_info->file_save_name }}" download>
+                        <img src="/uploads/{{ $detail_info->file_save_name }}" style="max-width: 500px;max-height: 500px;"><br>
+                    </a>
+                @endif
+            </td>
+        </tr>
+        <tr>
+            <th width="200px;">
+                비고
+            </th>
+            <td>
+                {{ $detail_info->user_remark }}
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2" align="center">
+                <input type="button" id="save_btn" class="btn btn-success" value="수정하기">
+                <input type="button" id="del_btn" class="btn btn-danger" value="탈퇴하기">
+                <input type="button" id="list_btn" class="btn btn-secondary" value="목록보기">
+            </td>
+        </tr>
+        </tbody>
+    </table>
 </div>
 </body>
 
