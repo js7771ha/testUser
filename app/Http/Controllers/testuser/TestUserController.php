@@ -483,8 +483,7 @@ class TestUserController extends Controller
             "user_age" => "required|integer",
             "user_tel" => "required|Numeric",
             "user_email" => "required|email",
-            "user_point" => "required",
-//            "user_file" => "mimes:jpeg,png,jpg|max:3072"
+            "user_point" => "required"
         ];
         $messages = [
             "user_gender.required" => "성별을 선택해주세요.",
@@ -494,9 +493,7 @@ class TestUserController extends Controller
             "user_tel.integer" => "전화번호는 숫자만 입력할 수 있습니다.",
             "user_email.required" => "이메일을 입력해주세요.",
             "user_email.email" => "이메일 형식이 올바르지 않습니다.",
-            "user_point.required" => "적립금을 입력해주세요.",
-            "user_file.mimes" => "등록할 수 없는 확장자 입니다. (jpg, png만 가능)",
-            "user_file.max" => "3MB가 넘는 이미지는 등록할 수 없습니다."
+            "user_point.required" => "적립금을 입력해주세요."
         ];
         $validator = Validator::make($request->all(), $rules, $messages);
 
@@ -550,7 +547,9 @@ class TestUserController extends Controller
             $result = $user->modUser($user_info, $id);
 
             // 파일 DB 업데이트
-            if (empty($request->input("file_idx"))) {
+            if (empty($request->input("file_idx"))
+                && !is_null($request->file("user_file"))
+                && $request->file("user_file") != "") {
                 $this->fileSave($request->file("user_file"), $id);
             } else if (!empty($request->input("file_idx"))
                     && !is_null($request->file("user_file"))

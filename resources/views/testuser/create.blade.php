@@ -611,7 +611,7 @@
 
                     // 직접 입력일때 입력한 값 사용
                     if (find_domain_val == "user_input") {
-                        domain = "@"+$find_email.closest("tr").find($(".i_domain_input")).val();
+                        domain = "@"+$find_email.closest("tr").find($(".i_domain")).val();
                     } else {
                         domain = "@"+find_domain_val;
                     }
