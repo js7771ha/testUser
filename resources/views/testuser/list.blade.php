@@ -111,7 +111,7 @@
                 </th>
                 <td align="left">
                     <select class="form-control" id="order_type" name="order_type" style="width: 10%;display: inline-block;">
-                        <option value="user_out_idx">순번</option>
+                        <option value="user_order">순번</option>
                         <option value="user_idx">번호</option>
                         <option value="user_state">상태</option>
                         <option value="user_name">이름</option>
@@ -175,7 +175,7 @@
                 <tr class="tr_row" @if($list->user_state=="2") style="background-color: yellowgreen" @endif>
                     <td><input type="checkbox" name="list_select"></td>
                     <td class="list_num">{{ ($user_list->total() - ( $user_list->total() - (($user_list->currentPage()-1) * $user_list->perPage() + ($key+1)) )) }}</td>
-{{--                    <td>{{ $list->user_out_idx }}</td>--}}
+{{--                    <td>{{ $list->user_order }}</td>--}}
                     <td class="td_col">{{ $list->user_idx }}</td>
                     <td>@if($list->user_state=="1") 사용 @elseif($list->user_state=="2") 휴면 @else - @endif</td>
                     <td><span class="list_user_name" onclick="list_user_name_click('{{ $list->user_idx }}')" style="cursor:pointer;">{{ $list->user_name }}</span></td>
@@ -190,8 +190,8 @@
                     <td><input type="button" name="del_btn" class="btn btn-danger" value="탈퇴" onclick="del_btn_click('{{ $list->user_idx }}')"></td>
 {{--                    <td><input type="button" name="del_btn" class="btn btn-danger" value="탈퇴" onclick="del_click({{ $list->user_idx }})"></td>--}}
                     <td>
-                        <input type="button" name="up_btn" class="btn-sm btn-outline-warning up_btn" value="▲" onclick="up_index_click($(this), '{{ $list->user_out_idx }}', '{{ $list->user_idx }}', '{{ $key+1 }}')">
-                        <input type="button" name="down_btn" class="btn-sm btn-outline-warning down_btn" value="▼" onclick="down_index_click($(this), '{{ $list->user_out_idx }}', '{{ $list->user_idx }}', '{{ $user_list->perPage() }}', '{{ $key+1 }}', '{{ $user_list->total() }}')">
+                        <input type="button" name="up_btn" class="btn-sm btn-outline-warning up_btn" value="▲" onclick="up_index_click($(this), '{{ $list->user_order }}', '{{ $list->user_idx }}', '{{ $key+1 }}')">
+                        <input type="button" name="down_btn" class="btn-sm btn-outline-warning down_btn" value="▼" onclick="down_index_click($(this), '{{ $list->user_order }}', '{{ $list->user_idx }}', '{{ $user_list->perPage() }}', '{{ $key+1 }}', '{{ $user_list->total() }}')">
                     </td>
                 </tr>
             @endforeach
@@ -373,7 +373,7 @@
                 url : "{{ route("testuser_upindex") }}",
                 data : {
                     "user_idx" : user_idx,
-                    "user_out_idx" : out_idx,
+                    "user_order" : out_idx,
                     "prev_user_idx" : prev_user_idx
                 },
                 dataType : "json",
@@ -392,7 +392,7 @@
     }
 
     // 각 row 의 순번 ▼ 버튼 클릭 시
-    function down_index_click (object, out_idx, user_idx, perpage, list_num, list_total) {      // this, user_out_idx, user_idx, 페이지 표시 개수, 현재 row 의 key 값, total 리스트 개수
+    function down_index_click (object, out_idx, user_idx, perpage, list_num, list_total) {      // this, user_order, user_idx, 페이지 표시 개수, 현재 row 의 key 값, total 리스트 개수
         let next_user_idx = object.closest("tr").next().find(".td_col").text(); // 바꿀 row 의 user_idx 값
         let this_number = object.closest("tr").find(".list_num").text();        // 현재 row 의 순번 td 값
         if (this_number == list_total) {
@@ -405,7 +405,7 @@
                 url : "{{ route("testuser_downindex") }}",
                 data : {
                     "user_idx" : user_idx,
-                    "user_out_idx" : out_idx,
+                    "user_order" : out_idx,
                     "next_user_idx" : next_user_idx
                 },
                 dataType : "json",

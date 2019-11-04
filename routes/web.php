@@ -12,7 +12,7 @@
 */
 
 Route::get('/', function () {
-    return 'welcome';
+    return view('test');
 });
 
 Route::get('/list', 'testuser\TestUserController@index')->name('testuser_index');                       // 리스트

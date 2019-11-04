@@ -41,7 +41,7 @@ class TestUser extends Model
             "user_married",
             "user_point",
             "created_at",
-            "user_out_idx"
+            "user_order"
         );
 
         if($state === "del_except_list") {
@@ -49,10 +49,10 @@ class TestUser extends Model
 //            dd($search);
             $listModel = $listModel
                             // 계정 상태
-                            ->wherein("user_state", $search["user_state_arr"])
+                            ->wherein("user_state", $search["user_state"])
                             // 성별
-                            ->when($search["user_gender"] != "", function ($listmodel) use ($search) {
-                                $listmodel->wherein("user_gender", $search["user_gender_arr"]);
+                            ->when($search["user_gender"] != "all", function ($listmodel) use ($search) {
+                                $listmodel->where("user_gender", $search["user_gender"]);
                             })
                             // 검색어
                             ->when(isset($search["search_select"]) && count($search["search_select"]) > 0 && !empty($search["search_select"][0]), function ($listmodel) use ($search) {
@@ -357,7 +357,7 @@ class TestUser extends Model
     }
 
     /**
-     * 사용계정, 휴면계정 count (user_out_idx 에 쓰임)
+     * 계정 count (user_order 에 쓰임)
      *
      * @param array $state
      * @return mixed
@@ -371,29 +371,30 @@ class TestUser extends Model
     /**
      * 순번 변경 (↑)
      *
-     * @param int $user_out_idx
+     * @param int $user_order
      * @param int $user_idx
      * @param int $prev_user_idx
      */
-    public function upIndex(int $user_out_idx=0, int $user_idx=0, int $prev_user_idx=0)
+    public function upIndex(int $user_order=0, int $user_idx=0, int $prev_user_idx=0)
     {
-        $prev_out_index = $this->where("user_idx", "=", $prev_user_idx)->value("user_out_idx");
-        $this->where("user_idx", "=", $prev_user_idx)->update(["user_out_idx"=>$user_out_idx]);
-        $this->where("user_idx", "=", $user_idx)->update(["user_out_idx"=>$prev_out_index]);
+        $prev_out_index = $this->where("user_idx", "=", $prev_user_idx)->value("user_order");
+
+        $this->where("user_idx", "=", $prev_user_idx)->update(["user_order"=>$user_order]);
+        $this->where("user_idx", "=", $user_idx)->update(["user_order"=>$prev_out_index]);
     }
 
 
     /**
      * 순번 변경 (↓)
      *
-     * @param int $user_out_idx
+     * @param int $user_order
      * @param int $user_idx
      * @param int $prev_user_idx
      */
-    public function downIndex(int $user_out_idx=0, int $user_idx=0, int $next_user_idx=0)
+    public function downIndex(int $user_order=0, int $user_idx=0, int $next_user_idx=0)
     {
-        $next_out_index = $this->where("user_idx", "=", $next_user_idx)->value("user_out_idx");
-        $this->where("user_idx", "=", $next_user_idx)->update(["user_out_idx"=>$user_out_idx]);
-        $this->where("user_idx", "=", $user_idx)->update(["user_out_idx"=>$next_out_index]);
+        $next_out_index = $this->where("user_idx", "=", $next_user_idx)->value("user_order");
+        $this->where("user_idx", "=", $next_user_idx)->update(["user_order"=>$user_order]);
+        $this->where("user_idx", "=", $user_idx)->update(["user_order"=>$next_out_index]);
     }
 }

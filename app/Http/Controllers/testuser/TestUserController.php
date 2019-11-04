@@ -26,37 +26,34 @@ class TestUserController extends Controller
 
     public function index(Request $request)
     {
-        // 리스트 출력
-        $user = new TestUser();
-        $perpage = 2;
-        if (!is_null($request->input("perpage"))&& $request->input("perpage") != ""&& $request->input("perpage") > 0) {
-            $perpage = $request->input("perpage");
-        }
+        // Define
+        // Validation
+        // DataSet
+        // Return
 
+        $user = new TestUser();
         $search = array();
 
-        // user_state 값이 없으면 모든 계정 출력, 값이 있으면 선택 된 값 출력
-        if (!is_null($request->input("user_state"))) {
-            $search["user_state"] = is_array($request->input("user_state")) ? $request->input("user_state") : [$request->input("user_state")];
-            if ($search["user_state"][0] == "all" || count($search["user_state"]) == 0) {
-                $search["user_state_arr"] = [self::ACCOUNT, self::DORMANCY];
-            } else {
-                $search["user_state_arr"] = $search["user_state"];
-            }
-        } else {
-            $search["user_state"] = array();
-            $search["user_state_arr"] = [self::ACCOUNT, self::DORMANCY];
-        }
+        // Request
+        $perpage = $request->input("perpage", 2);
+        $search["user_state"] = $request->input("user_state", array(self::ACCOUNT, self::DORMANCY));
+        $search["user_gender"] = $request->input("user_gender", "all");
+        $search["order_type"] = $request->input("order_type", "");
+        $search["order_style"] = $request->input("order_style", "");
+        $search["search_date"]['from_date'] = $request->input("from_date", "");
+        $search["search_date"]['to_date'] = $request->input("to_date", "");
 
-        // 라디오 선택이 "all"이면 1, 2 전부 조회, 아니면 해당 값 조회
-        if (!is_null($request->input("user_gender")) && $request->input("user_gender") == "all") {
-            $search["user_gender_arr"] = array("1", "2");
-        } else if (!is_null($request->input("user_gender")) && $request->input("user_gender") != "all") {
-            $search["user_gender_arr"] = array($request->input("user_gender", array("1", "2")));
-        }
+        dd($request->all(), $search);
+
+//        search_type1 = 이름/아이디/전화번호
+//        search_keyword1 = 검색어
+//
+//        search_type2 = 이름/아이디/전화번호
+//        search_keyword2 = 검색어
 
         // 검색어가 있으면 검색어 설정 (배열)
-        if (is_array($request->input("search_select")) && count($request->input("search_select")) > 0) {
+        if (is_array($request->input("search_select")) &&
+            count($request->input("search_select")) > 0) {
             foreach ($request->input("search_select") as $key => $item) {
                 $search["search_select"][$key] = $request->input("search_select")[$key];
                 $search["search_input"][$key] = $request->input("search_input")[$key];
@@ -70,11 +67,9 @@ class TestUserController extends Controller
             $search["search_input"] = array("", "");
         }
 
-        $search["user_gender"] = $request->input("user_gender", "");
-        $search["order_type"] = $request->input("order_type", "");
-        $search["order_style"] = $request->input("order_style", "");
-        $search["search_date"]['from_date'] = $request->input("from_date", "");
-        $search["search_date"]['to_date'] = $request->input("to_date", "");
+
+
+
 
         if ($search["search_date"]['to_date'] != "") {
             $search["search_date"]['to_date'] = date("Y-m-d", strtotime($search["search_date"]['to_date'] . " + 1 days"));    // 0시 부터 0시까지 검색 이기때문에 +1일 후 검색)
@@ -82,6 +77,7 @@ class TestUserController extends Controller
 
         // 검색 리스트 조회
         $user_list = $user->getUserListModel("del_except_list", $search)->paginate($perpage);
+
         // 검색 리스트 카운트 조회
         $user_list_count = $user->getUserListModelCount("del_except_list", $search);
 
@@ -90,24 +86,45 @@ class TestUserController extends Controller
             $value->user_name = decrypt($value->user_name);
             $value->user_email = decrypt($value->user_email);
             $value->user_tel = decrypt($value->user_tel);
-            $value->user_tel = substr($value->user_tel, 0, 3) . "-" . substr($value->user_tel, 3, 4) . "-" . substr($value->user_tel, 7);
+            $value->user_tel =
+                substr($value->user_tel, 0, 3)."-".
+                substr($value->user_tel, 3, 4)."-".
+                substr($value->user_tel, 7);
         }
 
         $count_all = array();
         $count_all["state"] = $this->countState();      // 계정 카운트
-        $count_all["age"] = $this->countAge();          // 연령 카운트
         $count_all["age"] = $this->countAge();          // 연령 카운트
         $count_all["gender"] = $this->countGender();    // 성별 카운트
         $count_all["point"] = $this->countPoint();      // 포인트 카운트
         $total_point = $this->totalPoint();             // total
         $avg_age = $this->avgAge();                     // 평균 연령대
 
+        /*
+
+        $datas = array();
+        $conditions = array();
+
+        $getList = $list;   // list
+        $getInfo = $info;   // Row
+
+        Carbon::class
+
+        Date >> 검색조건 (Between => 조건식)
+        */
+
         // 조회 후 가입일 검색 중 종료일 원래 입력된 데이터 값으로 변경
         $search["search_date"]['to_date'] = $request->input("to_date", "");
 
-        return view("testuser.list")->with("user_list", $user_list)->with("perpage", $perpage)->with("search", $search)->with("user_list_count", $user_list_count)
-            ->with("total_point", $total_point)->with("avg_age", $avg_age)->with("count_all", $count_all);
-    }
+        return view("testuser.list")
+            ->with("user_list", $user_list)
+            ->with("perpage", $perpage)
+            ->with("search", $search)
+            ->with("user_list_count", $user_list_count)
+            ->with("total_point", $total_point)
+            ->with("avg_age", $avg_age)
+            ->with("count_all", $count_all);
+       }
 
 
     /**
@@ -354,7 +371,7 @@ class TestUserController extends Controller
                 $user_info["user_name"] = $encrypted_name;
                 $user_info["user_id"] = $request->input("user_id")[$key];
                 $user_info["user_pwd"] = $encrypted_passwd;
-                $user_info["user_age"] = $request->input("user_age")[$key];
+                $user_info["user_age"] = $request->input("user_age.{$key}");
                 $user_info["user_gender"] = $request->input("user_gender")[$key];
                 $user_info["user_email"] = $encrypted_email;
                 $user_info["user_tel"] = $encrypted_tel;
@@ -364,8 +381,8 @@ class TestUserController extends Controller
                 $user_info["user_zip"] = $request->input("user_zip")[$key];
                 $user_info["user_addr"] = $request->input("user_addr")[$key];
                 $user_info["user_addr_detail"] = $request->input("user_addr_detail")[$key];
-                $user_info["user_out_idx"] = $user->getCountStateUseSave();
-                $user_info["user_out_idx"] += 1;
+                $user_info["user_order"] = $user->getCountStateUseSave();
+                $user_info["user_order"] += 1;
 
                 $user_idx = $user->saveUser($user_info);
 
@@ -404,8 +421,8 @@ class TestUserController extends Controller
         $file_info["file_original_name"] = $file->getClientOriginalName();
         $file_info["file_save_name"] = $user_idx."_".md5_file($file).'.'.$file_extension;
 
-        $file->move("uploads/", $file_info["file_save_name"]);
-//        Storage::disk('local')->put($file_info["file_save_name"],  File::get($file));
+//        $file->move("uploads/", $file_info["file_save_name"]);
+        Storage::disk('local')->put($file_info["file_save_name"],  File::get($file));
 
         $fileModel = new TestFile();
         $fileModel->saveFile($file_info);
@@ -578,12 +595,12 @@ class TestUserController extends Controller
         $file_info["file_save_name"] = $user_idx."_".md5_file($file).'.'.$file_extension;
 
         if ($file_save_name != "") {
-//            Storage::disk("local")->delete($file_save_name);
-            unlink("uploads/".$file_save_name);
+            Storage::disk("local")->delete($file_save_name);
+//            unlink("uploads/".$file_save_name);
         }
 
-        $file->move("uploads/", $file_info["file_save_name"]);
-//        Storage::disk("local")->put($file_info["file_save_name"],  File::get($file));
+//        $file->move("uploads/", $file_info["file_save_name"]);
+        Storage::disk("local")->put($file_info["file_save_name"],  File::get($file));
 
         $fileModel = new TestFile();
         $fileModel->updateFile($file_info, $file_idx);
@@ -841,14 +858,14 @@ class TestUserController extends Controller
     public function upIndex(Request $request)
     {
         $user_idx = $request->input("user_idx");
-        $user_out_idx = $request->input("user_out_idx");
+        $user_order = $request->input("user_order");
         $prev_user_idx = $request->input("prev_user_idx");
 
         $result = "";
         DB::beginTransaction();
         try {
             $user = new TestUser();
-            $user->upIndex($user_out_idx, $user_idx, $prev_user_idx);
+            $user->upIndex($user_order, $user_idx, $prev_user_idx);
             $result = "change_success";
 
             DB::commit();
@@ -871,14 +888,14 @@ class TestUserController extends Controller
     public function downIndex(Request $request)
     {
         $user_idx = $request->input("user_idx");
-        $user_out_idx = $request->input("user_out_idx");
+        $user_order = $request->input("user_order");
         $next_user_idx = $request->input("next_user_idx");
 
         $result = "";
         DB::beginTransaction();
         try {
             $user = new TestUser();
-            $user->downIndex($user_out_idx, $user_idx, $next_user_idx);
+            $user->downIndex($user_order, $user_idx, $next_user_idx);
             $result = "change_success";
 
             DB::commit();
