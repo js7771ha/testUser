@@ -35,24 +35,24 @@
                     검색어
                 </th>
                 <td align="left">
-                    <select id="search_select1" name="search_select[]" class="form-control search_select" style="width: 150px;display: inline-block;">
+                    <select id="search_type1" name="search_type[]" class="form-control search_type" style="width: 150px;display: inline-block;">
                         <option value="__default__">선택</option>
                         <option value="user_name">이름</option>
                         <option value="user_id">아이디</option>
                         <option value="user_email">이메일</option>
                     </select>
-                    <input type="text" id="search_input1" name="search_input[]" class="form-control search_input" value="{{ $search["search_input"][0] }}" style="width: 200px;display: inline-block;">
+                    <input type="text" id="search_keyword1" name="search_keyword[]" class="form-control search_keyword" value="{{ $search["search_keyword"][0] }}" style="width: 200px;display: inline-block;">
                 </td>
             </tr>
             <tr>
                 <td align="left">
-                    <select id="search_select2" name="search_select[]" class="form-control search_select" style="width: 150px;display: inline-block;">
+                    <select id="search_type2" name="search_type[]" class="form-control search_type" style="width: 150px;display: inline-block;">
                         <option value="__default__">선택</option>
                         <option value="user_name">이름</option>
                         <option value="user_id">아이디</option>
                         <option value="user_email">이메일</option>
                     </select>
-                    <input type="text" id="search_input2" name="search_input[]" class="form-control search_input" value="{{ $search["search_input"][1] }}" style="width: 200px;display: inline-block;">
+                    <input type="text" id="search_keyword2" name="search_keyword[]" class="form-control search_keyword" value="{{ $search["search_keyword"][1] }}" style="width: 200px;display: inline-block;">
                 </td>
             </tr>
             <tr>
@@ -207,8 +207,8 @@
     <div id="paging">
         {{ $user_list
             ->appends([
-                'search_select'=>request()->search_select,
-                'search_input'=>request()->search_input,
+                'search_type'=>request()->search_type,
+                'search_keyword'=>request()->search_keyword,
                 'user_state'=>request()->user_state,
                 'user_gender'=>request()->user_gender,
                 'from_date'=>request()->from_date,
@@ -447,15 +447,15 @@
         }
 
         // 검색어 selected
-        @if(isset($search["search_select"]) && count($search["search_select"]) > 0)
-            @foreach($search["search_select"] as $key => $item)
-                $("#search_select1 option").each(function() {
+        @if(isset($search["search_type"]) && count($search["search_type"]) > 0)
+            @foreach($search["search_type"] as $key => $item)
+                $("#search_type1 option").each(function() {
                     if("{{ $key }}" === "0" && "{{ $item }}" === $(this).val()) {
                         $(this).prop("selected", true);
                         return false;
                     }
                 });
-                $("#search_select2 option").each(function() {
+                $("#search_type2 option").each(function() {
                     if("{{ $key }}" === "1" && "{{ $item }}" === $(this).val()) {
                         $(this).prop("selected", true);
                         return false;
@@ -581,12 +581,12 @@
         // 검색 버튼 클릭 시
         $("#search_btn").click(function() {
             // 검색어 select 된 값이 없으면 select, input 초기화
-            $(".search_select").each(function() {
+            $(".search_type").each(function() {
                 if ($(this).val() === "__default__") {
                     $(this).val("");
-                    $(this).closest("tr").find(".search_input").val("");
+                    $(this).closest("tr").find(".search_keyword").val("");
                 }
-                if($(this).closest("tr").find(".search_input").val() === "") {
+                if($(this).closest("tr").find(".search_keyword").val() === "") {
                     $(this).val("");
                 }
             });
@@ -595,8 +595,8 @@
 
         // 초기화 버튼 클릭 시
         $("#reset_btn").click(function() {
-            $("#search_select").find("option:eq(0)").prop("selected", true);
-            $("#search_input").val("");
+            $("#search_type").find("option:eq(0)").prop("selected", true);
+            $("#search_keyword").val("");
             $(".user_state").each(function() {
                 $(this).prop("checked", false);
             });

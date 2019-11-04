@@ -26,10 +26,6 @@ class TestUserController extends Controller
 
     public function index(Request $request)
     {
-        // Define
-        // Validation
-        // DataSet
-        // Return
 
         $user = new TestUser();
         $search = array();
@@ -40,43 +36,26 @@ class TestUserController extends Controller
         $search["user_gender"] = $request->input("user_gender", "all");
         $search["order_type"] = $request->input("order_type", "");
         $search["order_style"] = $request->input("order_style", "");
-        $search["search_date"]['from_date'] = $request->input("from_date", "");
-        $search["search_date"]['to_date'] = $request->input("to_date", "");
+        $search["search_date"]["from_date"] = $request->input("from_date", "");
+        $search["search_date"]["to_date"] = $request->input("to_date", "");
+        $search["search_type"][0] = $request->input("search_type.0", "");
+        $search["search_type"][1] = $request->input("search_type.1", "");
+        $search["search_keyword"][0] = $request->input("search_keyword.0", "");
+        $search["search_keyword"][1] = $request->input("search_keyword.1", "");
+
+        if ($search["search_date"]["to_date"] != "") {
+            $search["search_date"]["to_date"] = date("Y-m-d", strtotime($search["search_date"]["to_date"] . " + 1 days"));    // 0시 부터 0시까지 검색 이기때문에 +1일 후 검색)
+        }
 
         dd($request->all(), $search);
+        // Define
+        // Validation
 
-//        search_type1 = 이름/아이디/전화번호
-//        search_keyword1 = 검색어
-//
-//        search_type2 = 이름/아이디/전화번호
-//        search_keyword2 = 검색어
+        // DataSet
 
-        // 검색어가 있으면 검색어 설정 (배열)
-        if (is_array($request->input("search_select")) &&
-            count($request->input("search_select")) > 0) {
-            foreach ($request->input("search_select") as $key => $item) {
-                $search["search_select"][$key] = $request->input("search_select")[$key];
-                $search["search_input"][$key] = $request->input("search_input")[$key];
-            }
-            if (count($search["search_select"]) == 1) {
-                $search["search_select"][1] = "";
-                $search["search_input"][1] = "";
-            }
-        } else {
-            $search["search_select"] = array("", "");
-            $search["search_input"] = array("", "");
-        }
-
-
-
-
-
-        if ($search["search_date"]['to_date'] != "") {
-            $search["search_date"]['to_date'] = date("Y-m-d", strtotime($search["search_date"]['to_date'] . " + 1 days"));    // 0시 부터 0시까지 검색 이기때문에 +1일 후 검색)
-        }
 
         // 검색 리스트 조회
-        $user_list = $user->getUserListModel("del_except_list", $search)->paginate($perpage);
+        $user_list = $user->getList("del_except_list", $search)->paginate($perpage);
 
         // 검색 리스트 카운트 조회
         $user_list_count = $user->getUserListModelCount("del_except_list", $search);
@@ -116,6 +95,7 @@ class TestUserController extends Controller
         // 조회 후 가입일 검색 중 종료일 원래 입력된 데이터 값으로 변경
         $search["search_date"]['to_date'] = $request->input("to_date", "");
 
+        // Return
         return view("testuser.list")
             ->with("user_list", $user_list)
             ->with("perpage", $perpage)

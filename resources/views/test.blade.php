@@ -59,6 +59,15 @@ class TwoClass extends OneClass
     const TEST = "test2";
 }
 
+class OneStatic1 extends AOne
+{
+    const TEST = "test2";
+    public function test()
+    {
+        return parent::TEST;
+    }
+}
+
 $objects = array(
     'one, static::'     => new OneStatic(),
     'two, static::'     => new TwoStatic(),
@@ -68,6 +77,7 @@ $objects = array(
     'two,  $this::'     => new TwoThis(),
     'one,  class::'     => new OneClass(),
     'two,  class::'     => new TwoClass(),
+    'one, parent::'     => new OneStatic1(),
 );
 
 $results = array();

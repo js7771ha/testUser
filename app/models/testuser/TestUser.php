@@ -21,7 +21,7 @@ class TestUser extends Model
      * @param array $search
      * @return Model
      */
-    public function getUserListModel(String $state, array $search=[])
+    public function getList(String $state, array $search=[])
     {
         // all list
         if ($state == "") {
