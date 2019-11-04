@@ -1,68 +1,5 @@
 [
     {
-        "name": "beyondcode/laravel-dump-server",
-        "version": "1.3.0",
-        "version_normalized": "1.3.0.0",
-        "source": {
-            "type": "git",
-            "url": "https://github.com/beyondcode/laravel-dump-server.git",
-            "reference": "fcc88fa66895f8c1ff83f6145a5eff5fa2a0739a"
-        },
-        "dist": {
-            "type": "zip",
-            "url": "https://api.github.com/repos/beyondcode/laravel-dump-server/zipball/fcc88fa66895f8c1ff83f6145a5eff5fa2a0739a",
-            "reference": "fcc88fa66895f8c1ff83f6145a5eff5fa2a0739a",
-            "shasum": ""
-        },
-        "require": {
-            "illuminate/console": "5.6.*|5.7.*|5.8.*|^6.0",
-            "illuminate/http": "5.6.*|5.7.*|5.8.*|^6.0",
-            "illuminate/support": "5.6.*|5.7.*|5.8.*|^6.0",
-            "php": "^7.1",
-            "symfony/var-dumper": "^4.1.1"
-        },
-        "require-dev": {
-            "larapack/dd": "^1.0",
-            "phpunit/phpunit": "^7.0"
-        },
-        "time": "2019-08-11T13:17:40+00:00",
-        "type": "library",
-        "extra": {
-            "laravel": {
-                "providers": [
-                    "BeyondCode\\DumpServer\\DumpServerServiceProvider"
-                ]
-            }
-        },
-        "installation-source": "dist",
-        "autoload": {
-            "psr-4": {
-                "BeyondCode\\DumpServer\\": "src"
-            },
-            "files": [
-                "helpers.php"
-            ]
-        },
-        "notification-url": "https://packagist.org/downloads/",
-        "license": [
-            "MIT"
-        ],
-        "authors": [
-            {
-                "name": "Marcel Pociot",
-                "email": "marcel@beyondco.de",
-                "homepage": "https://beyondco.de",
-                "role": "Developer"
-            }
-        ],
-        "description": "Symfony Var-Dump Server for Laravel",
-        "homepage": "https://github.com/beyondcode/laravel-dump-server",
-        "keywords": [
-            "beyondcode",
-            "laravel-dump-server"
-        ]
-    },
-    {
         "name": "dnoegel/php-xdg-base-dir",
         "version": "0.1",
         "version_normalized": "0.1.0.0",
@@ -1064,6 +1001,68 @@
             "s3",
             "sftp",
             "storage"
+        ]
+    },
+    {
+        "name": "milon/barcode",
+        "version": "6.0.1",
+        "version_normalized": "6.0.1.0",
+        "source": {
+            "type": "git",
+            "url": "https://github.com/milon/barcode.git",
+            "reference": "859675d92ac442ba8833186a6b72ace825b9a392"
+        },
+        "dist": {
+            "type": "zip",
+            "url": "https://api.github.com/repos/milon/barcode/zipball/859675d92ac442ba8833186a6b72ace825b9a392",
+            "reference": "859675d92ac442ba8833186a6b72ace825b9a392",
+            "shasum": ""
+        },
+        "require": {
+            "illuminate/support": "5.*|~6",
+            "php": ">=5.6.0"
+        },
+        "time": "2019-09-09T12:23:03+00:00",
+        "type": "library",
+        "extra": {
+            "laravel": {
+                "providers": [
+                    "Milon\\Barcode\\BarcodeServiceProvider"
+                ],
+                "aliases": {
+                    "DNS1D": "Milon\\Barcode\\Facades\\DNS1DFacade",
+                    "DNS2D": "Milon\\Barcode\\Facades\\DNS2DFacade"
+                }
+            }
+        },
+        "installation-source": "dist",
+        "autoload": {
+            "psr-0": {
+                "Milon\\Barcode": "src/"
+            }
+        },
+        "notification-url": "https://packagist.org/downloads/",
+        "license": [
+            "LGPL-3.0"
+        ],
+        "authors": [
+            {
+                "name": "Nuruzzaman Milon",
+                "email": "contact@milon.im"
+            }
+        ],
+        "description": "Barcode generator like Qr Code , PDF417,C39, C39+,C39E,C39E+,C93,S25,S25+,I25,I25+,C128,C128A,C128B,C128C,2-Digits UPC-Based Extention,5-Digits UPC-Based Extention,EAN 8,EAN 13,UPC-A,UPC-E,MSI (Variation of Plessey code) ",
+        "keywords": [
+            "CODABAR",
+            "CODE 128",
+            "CODE 39",
+            "barcode",
+            "datamatrix",
+            "ean",
+            "laravel",
+            "pdf417",
+            "qr code",
+            "qrcode"
         ]
     },
     {
@@ -4528,17 +4527,17 @@
     },
     {
         "name": "symfony/var-dumper",
-        "version": "v4.3.4",
-        "version_normalized": "4.3.4.0",
+        "version": "v4.3.5",
+        "version_normalized": "4.3.5.0",
         "source": {
             "type": "git",
             "url": "https://github.com/symfony/var-dumper.git",
-            "reference": "641043e0f3e615990a0f29479f9c117e8a6698c6"
+            "reference": "bde8957fc415fdc6964f33916a3755737744ff05"
         },
         "dist": {
             "type": "zip",
-            "url": "https://api.github.com/repos/symfony/var-dumper/zipball/641043e0f3e615990a0f29479f9c117e8a6698c6",
-            "reference": "641043e0f3e615990a0f29479f9c117e8a6698c6",
+            "url": "https://api.github.com/repos/symfony/var-dumper/zipball/bde8957fc415fdc6964f33916a3755737744ff05",
+            "reference": "bde8957fc415fdc6964f33916a3755737744ff05",
             "shasum": ""
         },
         "require": {
@@ -4561,7 +4560,7 @@
             "ext-intl": "To show region name in time zone dump",
             "symfony/console": "To use the ServerDumpCommand and/or the bin/var-dump-server script"
         },
-        "time": "2019-08-26T08:26:39+00:00",
+        "time": "2019-10-04T19:48:13+00:00",
         "bin": [
             "Resources/bin/var-dump-server"
         ],
