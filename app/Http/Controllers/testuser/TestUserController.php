@@ -29,9 +29,7 @@ class TestUserController extends Controller
         // 리스트 출력
         $user = new TestUser();
         $perpage = 2;
-        if (!is_null($request->input("perpage"))
-            && $request->input("perpage") != ""
-            && $request->input("perpage") > 0) {
+        if (!is_null($request->input("perpage"))&& $request->input("perpage") != ""&& $request->input("perpage") > 0) {
             $perpage = $request->input("perpage");
         }
 
@@ -292,9 +290,7 @@ class TestUserController extends Controller
     public function store(Request $request)
     {
         // 저장하기
-
-        $this->fileSave($request->file("user_file")[0], 1);
-
+//        $this->fileSave($request->file("user_file")[0], 1);
         $rules = [
             "user_name.*" => "required",
             "user_id.*" => "required|alpha_dash",
@@ -406,9 +402,10 @@ class TestUserController extends Controller
         $file_extension = $file->getClientOriginalExtension();
         $file_info["user_idx"] = $user_idx;
         $file_info["file_original_name"] = $file->getClientOriginalName();
-        $file_info["file_save_name"] = md5_file($file).'.'.$file_extension;
+        $file_info["file_save_name"] = $user_idx."_".md5_file($file).'.'.$file_extension;
 
-        Storage::disk('local')->put($file_info["file_save_name"],  File::get($file));
+        $file->move("uploads/", $file_info["file_save_name"]);
+//        Storage::disk('local')->put($file_info["file_save_name"],  File::get($file));
 
         $fileModel = new TestFile();
         $fileModel->saveFile($file_info);
@@ -547,14 +544,10 @@ class TestUserController extends Controller
             $result = $user->modUser($user_info, $id);
 
             // 파일 DB 업데이트
-            if (empty($request->input("file_idx"))
-                && !is_null($request->file("user_file"))
-                && $request->file("user_file") != "") {
+            if (empty($request->input("file_idx")) && !is_null($request->file("user_file")) && $request->file("user_file") != "") {
                 $this->fileSave($request->file("user_file"), $id);
-            } else if (!empty($request->input("file_idx"))
-                    && !is_null($request->file("user_file"))
-                    && $request->file("user_file") != "") {
-                $this->fileUpdate($request->file("user_file"), $request->input("file_idx"), $request->input("file_save_name"));
+            } else if (!empty($request->input("file_idx")) && !is_null($request->file("user_file")) && $request->file("user_file") != "") {
+                $this->fileUpdate($request->file("user_file"), $request->input("file_idx"), $request->input("file_save_name"), $id);
             }
 
             DB::commit();
@@ -572,8 +565,9 @@ class TestUserController extends Controller
      * @param $file
      * @param $file_idx
      * @param $file_save_name
+     * @param $user_idx
      */
-    public function fileUpdate($file, $file_idx=0, $file_save_name="")
+    public function fileUpdate($file, $file_idx=0, $file_save_name="", $user_idx=0)
     {
         if (!is_numeric($file_idx) && $file_idx <= 0) {
             abort(404);
@@ -581,10 +575,15 @@ class TestUserController extends Controller
 
         $file_extension = $file->getClientOriginalExtension();
         $file_info["file_original_name"] = $file->getClientOriginalName();
-        $file_info["file_save_name"] = md5_file($file).'.'.$file_extension;
+        $file_info["file_save_name"] = $user_idx."_".md5_file($file).'.'.$file_extension;
 
-        Storage::disk("local")->delete($file_save_name);
-        Storage::disk("local")->put($file_info["file_save_name"],  File::get($file));
+        if ($file_save_name != "") {
+//            Storage::disk("local")->delete($file_save_name);
+            unlink("uploads/".$file_save_name);
+        }
+
+        $file->move("uploads/", $file_info["file_save_name"]);
+//        Storage::disk("local")->put($file_info["file_save_name"],  File::get($file));
 
         $fileModel = new TestFile();
         $fileModel->updateFile($file_info, $file_idx);

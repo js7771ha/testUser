@@ -36,13 +36,11 @@
         // 탈퇴하기 클릭 시
         $("#del_btn").click(function() {
             location.href = "{{ route("testuser_destroy", ["user_idx"=>$user_idx]) }}" + location.search;
-            // $("#checkpwd_form").submit();
         });
 
         // 목록보기 클릭 시
         $("#list_btn").click(function() {
             history.back();
-            {{--location.href = "{{ route("testuser_index") }}" + location.search;--}}
         });
     });
 

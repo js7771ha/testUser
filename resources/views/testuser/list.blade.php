@@ -353,37 +353,6 @@
 
 <script>
 
-    {{--// 탈퇴 버튼 onclick function--}}
-    {{--function del_click (idx) {--}}
-    {{--    let input_pwd = prompt("비밀번호를 입력해주세요.");--}}
-
-    {{--    if (input_pwd == null || input_pwd == undefined || input_pwd == "") {--}}
-    {{--        alert("비밀번호가 입력되지 않았습니다.");--}}
-    {{--        return false;--}}
-    {{--    } else {--}}
-    {{--        // 비밀번호 체크 ajax--}}
-    {{--        $.ajax({--}}
-    {{--            type : "POST",--}}
-    {{--            url : "{{ route("testuser_pwdcheck") }}",--}}
-    {{--            data : {--}}
-    {{--                "user_idx" : idx,--}}
-    {{--                "user_pwd" : input_pwd,--}}
-    {{--                _token : "{{ csrf_token() }}"--}}
-    {{--            },--}}
-    {{--            error : function(request, status, error) {--}}
-    {{--                alert("message : " + request.responseJSON.message + ", status : " + status + ", error : " + error);--}}
-    {{--            },--}}
-    {{--            complete : function (response) {--}}
-    {{--                alert(response.responseJSON.message);--}}
-    {{--                // 비밀번호 체크 ok 후 탈퇴 처리--}}
-    {{--                if(response.responseJSON.result === "pwd_check_ok") {--}}
-    {{--                    location.href = "{{ route("testuser_destroy") }}/"+idx+location.search;--}}
-    {{--                }--}}
-    {{--            }--}}
-    {{--        });--}}
-    {{--    }--}}
-    {{--}--}}
-
     // 탈퇴계정 리스트 보기 클릭 시
     function del_list_click () {
         let url = '{{ route("testuser_indexdel") }}'+location.search;
@@ -660,6 +629,7 @@
                             "idx_arr" : idx_arr,
                             _token: "{{ csrf_token() }}"
                         },
+                        dataType : "json",
                         success : function(response) {
                             alert(response.msg);
                             // 탈퇴처리 완료 후 재 조회

@@ -363,6 +363,7 @@
                 $("#btn_file_restore").val("등록 취소");
             } else {
                 $("#input_file_hidden").hide();
+                $("#user_file").val("");
                 $("#file_save_name").show();
                 $("#btn_file_restore").val("새로등록");
             }
@@ -430,38 +431,6 @@
         {{--// 탈퇴하기 클릭 시--}}
         {{--$("#del_btn").click(function() {--}}
         {{--    location.href = "{{ route("testuser_pwdcheckview", ["user_idx" => $detail_info->user_idx]) }}" + location.search;--}}
-        {{--});--}}
-        {{--// 탈퇴하기 클릭 시--}}
-        {{--$("#del_btn").click(function() {--}}
-        {{--    let pwd = $("[name=check_pwd]").val();--}}
-        {{--    if (pwd == "") {--}}
-        {{--        alert("비밀번호를 입력해주세요.");--}}
-        {{--        return false;--}}
-        {{--    } else {--}}
-        {{--        if(confirm("탈퇴 처리하시겠습니까?") === true) {--}}
-        {{--            $.ajax({--}}
-        {{--                type : "POST",--}}
-        {{--                url : "{{ route("testuser_pwdcheck") }}",--}}
-        {{--                data : {--}}
-        {{--                    "user_idx" : "{{ $detail_info->user_idx }}",--}}
-        {{--                    "user_pwd" : pwd,--}}
-        {{--                    _token: "{{ csrf_token() }}"--}}
-        {{--                },--}}
-        {{--                error : function(request, status, error) {--}}
-        {{--                    alert("message : " + request.responseJSON.message + ", status : " + status + ", error : " + error);--}}
-        {{--                },--}}
-        {{--                complete : function (response) {--}}
-        {{--                    alert(response.responseJSON.message);--}}
-        {{--                    if(response.responseJSON.result === "pwd_check_ok") {--}}
-        {{--                        location.href = "{{ route("testuser_destroy", ["user_idx"=>$detail_info->user_idx]) }}"+location.search;--}}
-        {{--                    }--}}
-        {{--                }--}}
-        {{--            });--}}
-
-        {{--        } else {--}}
-        {{--            return false;--}}
-        {{--        }--}}
-        {{--    }--}}
         {{--});--}}
 
         // 목록보기 클릭 시

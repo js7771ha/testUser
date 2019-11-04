@@ -100,6 +100,8 @@
                     <a href="/uploads/{{ $detail_info->file_save_name }}" download>
                         <img src="/uploads/{{ $detail_info->file_save_name }}" style="max-width: 500px;max-height: 500px;"><br>
                     </a>
+                @else
+                    등록된 파일이 없습니다.
                 @endif
             </td>
         </tr>

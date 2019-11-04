@@ -10,8 +10,6 @@
 
 <body>
 <div>
-    dd
-{{--    {{ dd(old()) }}--}}
     <form id="usersave_form" name="usersave_form" class="form-inline" action="{{ route("testuser_store") }}" method="post" enctype="multipart/form-data">
         {{ csrf_field() }}
         <table id="original" name="original" class="table table-bordered original">
@@ -491,6 +489,7 @@
                         }
                     },
                     error : function(request, status, error) {
+                        console.log(request);
                         alert("message : " + request.responseJSON.message + ", status : " + status + ", error : " + error);
                     }
                 });

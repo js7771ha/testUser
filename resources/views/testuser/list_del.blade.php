@@ -73,6 +73,7 @@
                     "user_idx" : idx,
                     _token: "{{ csrf_token() }}"
                 },
+                dataType : "json",
                 success : function(response) {
                     alert(response.message);
                     // 복구 완료 시 list 재 조회
@@ -107,6 +108,7 @@
                     "idx_arr" : idx_arr,
                     _token: "{{ csrf_token() }}"
                 },
+                dataType : "json",
                 success : function(response) {
                     alert(response.message);
                     // 복구 완료 시 팝업 닫고, list 재 조회

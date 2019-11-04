@@ -112,7 +112,7 @@ class TestUser extends Model
     /**
      * 리스트 페이지 연령대 카운트
      *
-     * @return count
+     * @return mixed
      */
 
     public function getCountAge()
@@ -122,12 +122,12 @@ class TestUser extends Model
         return $count;
     }
 
+
     /**
      * 리스트 페이지 평균 연령대
      *
-     * @return count
+     * @return mixed
      */
-
     public function getAvgAge()
     {
         $avg = $this->select("user_age")->avg("user_age");
@@ -138,7 +138,7 @@ class TestUser extends Model
     /**
      * 리스트 페이지 성별 카운트
      *
-     * @return count
+     * @return mixed
      */
 
     public function getCountGender()
@@ -152,7 +152,7 @@ class TestUser extends Model
     /**
      * 리스트 페이지 적립금 sum
      *
-     * @return sum
+     * @return mixed
      */
 
     public function getTotalPoint()
@@ -166,7 +166,7 @@ class TestUser extends Model
     /**
      * 리스트 페이지 적립금 count
      *
-     * @return sum
+     * @return mixed
      */
 
     public function getCountPoint()
@@ -176,11 +176,12 @@ class TestUser extends Model
         return $sum;
     }
 
+
     /**
      * 상세보기 유저 정보
      *
-     * @param  int $user_idx
-     * @return
+     * @param int $user_idx
+     * @return mixed
      */
     public function getUserDetail(int $user_idx=0)
     {
