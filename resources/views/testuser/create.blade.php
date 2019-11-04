@@ -10,6 +10,7 @@
 
 <body>
 <div>
+    dd
 {{--    {{ dd(old()) }}--}}
     <form id="usersave_form" name="usersave_form" class="form-inline" action="{{ route("testuser_store") }}" method="post" enctype="multipart/form-data">
         {{ csrf_field() }}
