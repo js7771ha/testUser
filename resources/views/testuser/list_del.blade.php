@@ -29,8 +29,8 @@
         </tr>
         </thead>
         <tbody>
-        @if(!is_null($user_list) && $user_list->count() > 0)
-            @foreach($user_list as $key => $list)
+        @if(!is_null($leave_list) && $leave_list->count() > 0)
+            @foreach($leave_list as $key => $list)
                 <tr class="tr_row">
                     <td>{{ $key+1 }}</td>
                     <td class="td_col">{{ $list->user_idx }}</td>
@@ -53,7 +53,7 @@
         @endif
         </tbody>
     </table>
-    @if(isset($user_list) && $user_list->count() > 0)
+    @if(isset($leave_list) && $leave_list->count() > 0)
         <input type="button" id="all_restore_btn" class="btn btn-danger" value="전체 복구">
     @endif
 </div>

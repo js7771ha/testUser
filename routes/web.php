@@ -16,7 +16,7 @@ Route::get('/', function () {
 });
 
 Route::get('/list', 'testuser\TestUserController@index')->name('testuser_index');                       // 리스트
-Route::get('/list/del', 'testuser\TestUserController@indexDel')->name('testuser_indexdel');             // 삭제 리스트
+Route::get('/list/del', 'testuser\TestUserController@indexLeave')->name('testuser_indexdel');           // 삭제 리스트
 Route::get('/create', 'testuser\TestUserController@create')->name('testuser_create');                   // 신규 등록 폼
 Route::post('/store', 'testuser\TestUserController@store')->name('testuser_store');                     // 등록
 Route::get('/detail/{user_idx?}', 'testuser\TestUserController@detail')->name('testuser_detail');       // user 상세정보

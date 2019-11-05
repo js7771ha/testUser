@@ -16,7 +16,7 @@
                 상태
             </th>
             <td>
-                {{ $detail_info->user_state == "1" ? "사용계정" : "휴면계정" }}
+                {{ $user_info->user_state == "1" ? "사용계정" : "휴면계정" }}
             </td>
         </tr>
         <tr>
@@ -24,7 +24,7 @@
                 이름
             </th>
             <td style="max-width: 700px;">
-                {{ $detail_info->user_name_decrypt." (".$detail_info->user_name.")" }}
+                {{ $user_info->user_name." (".$user_info->user_name.")" }}
             </td>
         </tr>
         <tr>
@@ -32,7 +32,7 @@
                 아이디
             </th>
             <td>
-                {{ $detail_info->user_id }}
+                {{ $user_info->user_id }}
             </td>
         </tr>
         <tr>
@@ -40,7 +40,7 @@
                 성별
             </th>
             <td>
-                {{ $detail_info->user_gender == "1" ? "남자" : "여자" }}
+                {{ $user_info->user_gender == "1" ? "남자" : "여자" }}
             </td>
         </tr>
         <tr>
@@ -48,7 +48,7 @@
                 나이
             </th>
             <td>
-                {{ $detail_info->user_age }} 세
+                {{ $user_info->user_age }} 세
             </td>
         </tr>
         <tr>
@@ -56,7 +56,7 @@
                 전화번호
             </th>
             <td>
-                {{ $detail_info->user_tel_decrypt }}
+                {{ $user_info->user_tel }}
             </td>
         </tr>
         <tr>
@@ -64,7 +64,7 @@
                 이메일
             </th>
             <td>
-                {{ $detail_info->user_email_decrypt }}
+                {{ $user_info->user_email }}
             </td>
         </tr>
         <tr>
@@ -72,7 +72,7 @@
                 적립금
             </th>
             <td>
-                {{ $detail_info->user_point }} 원
+                {{ $user_info->user_point }} 원
             </td>
         </tr>
         <tr>
@@ -80,7 +80,7 @@
                 결혼 여부
             </th>
             <td>
-                {{ $detail_info->user_married == "1" ? "미혼" : "기혼" }}
+                {{ $user_info->user_married == "1" ? "미혼" : "기혼" }}
             </td>
         </tr>
         <tr>
@@ -88,7 +88,7 @@
                 주소
             </th>
             <td>
-                {{ "(".$detail_info->user_zip.") ".$detail_info->user_addr." ".$detail_info->user_addr_detail }}
+                {{ "(".$user_info->user_zip.") ".$user_info->user_addr." ".$user_info->user_addr_detail }}
             </td>
         </tr>
         <tr>
@@ -96,9 +96,9 @@
                 등록 파일
             </th>
             <td>
-                @if($detail_info->file_save_name != "")
-                    <a href="/uploads/{{ $detail_info->file_save_name }}" download>
-                        <img src="/uploads/{{ $detail_info->file_save_name }}" style="max-width: 500px;max-height: 500px;"><br>
+                @if($user_info->file_save_name != "")
+                    <a href="/uploads/{{ $user_info->file_save_name }}" download>
+                        <img src="/uploads/{{ $user_info->file_save_name }}" style="max-width: 500px;max-height: 500px;"><br>
                     </a>
                 @else
                     등록된 파일이 없습니다.
@@ -110,7 +110,7 @@
                 비고
             </th>
             <td>
-                {{ $detail_info->user_remark }}
+                {{ $user_info->user_remark }}
             </td>
         </tr>
         <tr>
@@ -131,12 +131,12 @@
 
         // 수정하기 버튼 클릭 시
         $("#save_btn").click(function() {
-            location.href = "{{ route("testuser_edit", ["user_idx" => $detail_info->user_idx]) }}" + location.search;
+            location.href = "{{ route("testuser_edit", ["user_idx" => $user_info->user_idx]) }}" + location.search;
         });
 
         // 탈퇴하기 클릭 시
         $("#del_btn").click(function() {
-            location.href = "{{ route("testuser_pwdcheckview", ["user_idx" => $detail_info->user_idx]) }}" + location.search;
+            location.href = "{{ route("testuser_pwdcheckview", ["user_idx" => $user_info->user_idx]) }}" + location.search;
         });
 
         // 목록보기 클릭 시

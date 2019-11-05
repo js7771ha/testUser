@@ -9,7 +9,7 @@
 </head>
 <body>
 <div>
-    <form id="usermod_form" name="usermod_form" class="form-inline" action="{{ route("testuser_update", ["user_idx" => $detail_info->user_idx]) }}" method="POST" enctype="multipart/form-data">
+    <form id="usermod_form" name="usermod_form" class="form-inline" action="{{ route("testuser_update", ["user_idx" => $user_info->user_idx]) }}" method="POST" enctype="multipart/form-data">
         {{ csrf_field() }}
         <table class="table table-bordered">
             <tbody>
@@ -30,7 +30,7 @@
                     이름
                 </th>
                 <td>
-                    <input type="text" class="form-control" value="{{ $detail_info->user_name_decrypt }}" readonly />
+                    <input type="text" class="form-control" value="{{ $user_info->user_name }}" readonly />
                 </td>
             </tr>
             <tr>
@@ -38,7 +38,7 @@
                     아이디
                 </th>
                 <td>
-                    <input type="text" name="user_id" class="form-control" value="{{ $detail_info->user_id }}" readonly />
+                    <input type="text" name="user_id" class="form-control" value="{{ $user_info->user_id }}" readonly />
                 </td>
             </tr>
             <tr>
@@ -58,7 +58,7 @@
                     나이
                 </th>
                 <td>
-                    <input type="text" name="user_age" class="form-control" maxlength="3" value="{{ $detail_info->user_age }}" />
+                    <input type="text" name="user_age" class="form-control" maxlength="3" value="{{ $user_info->user_age }}" />
                 </td>
             </tr>
             <tr>
@@ -66,7 +66,7 @@
                     전화번호
                 </th>
                 <td>
-                    <input type="text" name="user_tel" class="form-control" maxlength="12" value="{{ $detail_info->user_tel_decrypt }}" />
+                    <input type="text" name="user_tel" class="form-control" minlength="8" maxlength="12" value="{{ $user_info->user_tel }}" />
                 </td>
             </tr>
             <tr>
@@ -74,8 +74,8 @@
                     이메일
                 </th>
                 <td>
-                    <input type="text" name="email" class="form-control" maxlength="30" value="{{ $detail_info->email }}" />@
-                    <input type="text" id="domain_input" name="domain" class="form-control" style="display:none;" value="{{ $detail_info->domain }}">
+                    <input type="text" name="email" class="form-control" maxlength="30" value="{{ $user_info->email }}" />@
+                    <input type="text" id="domain_input" name="domain" class="form-control" style="display:none;" value="{{ $user_info->domain }}">
                     <select id="domain" name="domain" class="form-control">
                         <option value="__default__">선택</option>
                         <option value="user_input">직접입력</option>
@@ -84,7 +84,7 @@
                         <option value="hanmail.net">hanmail.net</option>
                         <option value="nate.net">nate.com</option>
                     </select>
-                    <input type="hidden" name="user_email" value="{{ $detail_info->user_email_decrypt }}" />
+                    <input type="hidden" name="user_email" value="{{ $user_info->user_email }}" />
                 </td>
             </tr>
             <tr>
@@ -92,7 +92,7 @@
                     적립금
                 </th>
                 <td>
-                    <input type="text" name="user_point" class="form-control" maxlength="20" value="{{ $detail_info->user_point }}" />
+                    <input type="text" name="user_point" class="form-control" maxlength="20" value="{{ $user_info->user_point }}" />
                 </td>
             </tr>
             <tr>
@@ -115,7 +115,7 @@
                     우편번호
                 </th>
                 <td>
-                    <input type="text" id="user_zip" name="user_zip" class="form-control" value="{{ $detail_info->user_zip }}" readonly>
+                    <input type="text" id="user_zip" name="user_zip" class="form-control" value="{{ $user_info->user_zip }}" readonly>
                     <input type="button" id="zip_btn" class="btn btn-sm" value="우편번호 찾기" onclick="daumPostcode()">
                 </td>
             </tr>
@@ -124,7 +124,7 @@
                     기본 주소
                 </th>
                 <td>
-                    <input type="text" id="user_addr" name="user_addr" class="form-control" style="width: 50%" value="{{ $detail_info->user_addr }}" readonly>
+                    <input type="text" id="user_addr" name="user_addr" class="form-control" style="width: 50%" value="{{ $user_info->user_addr }}" readonly>
                 </td>
             </tr>
             <tr>
@@ -132,7 +132,7 @@
                     상세 주소
                 </th>
                 <td>
-                    <input type="text" id="user_addr_detail" name="user_addr_detail" class="form-control" value="{{ $detail_info->user_addr_detail }}" style="width: 50%">
+                    <input type="text" id="user_addr_detail" name="user_addr_detail" class="form-control" value="{{ $user_info->user_addr_detail }}" style="width: 50%">
                 </td>
             </tr>
             <tr>
@@ -140,9 +140,9 @@
                     업로드파일
                 </th>
                 <td>
-                    @if ($detail_info->file_save_name != "")
-                        <a href="/uploads/{{ $detail_info->file_save_name }}" id="file_save_name" download>
-                            <img src="/uploads/{{ $detail_info->file_save_name }}" style="max-width: 100px;max-height: 100px;">
+                    @if ($user_info->file_save_name != "")
+                        <a href="/uploads/{{ $user_info->file_save_name }}" id="file_save_name" download>
+                            <img src="/uploads/{{ $user_info->file_save_name }}" style="max-width: 100px;max-height: 100px;">
                         </a>
                         <span id="input_file_hidden" style="display: none">
                             <input type="file" id="user_file" name="user_file" class="form-control user_file" accept=".jpg, .png" onclick="file_click($(this))" onchange="file_change($(this))">
@@ -153,8 +153,8 @@
                         <input type="file" id="user_file" name="user_file" class="form-control user_file" accept=".jpg, .png" onclick="file_click($(this))" onchange="file_change($(this))">
                         <span class="span_hidden" style="display: none;"></span>
                     @endif
-                    <input type="hidden" name="file_idx" value="{{ $detail_info->file_idx }}">
-                    <input type="hidden" name="file_save_name" value="{{ $detail_info->file_save_name }}">
+                    <input type="hidden" name="file_idx" value="{{ $user_info->file_idx }}">
+                    <input type="hidden" name="file_save_name" value="{{ $user_info->file_save_name }}">
                 </td>
             </tr>
             <tr>
@@ -162,7 +162,7 @@
                     비고
                 </th>
                 <td>
-                    <textarea name="user_remark" class="form-control" style="width: 50%">{{ $detail_info->user_remark }}</textarea>
+                    <textarea name="user_remark" class="form-control" style="width: 50%">{{ $user_info->user_remark }}</textarea>
                 </td>
             </tr>
             <tr>
@@ -281,16 +281,16 @@
 
         // 상태 selected
         $("#user_state > option").each(function() {
-            if("{{ $detail_info->user_state }}" === $(this).val()) {
+            if("{{ $user_info->user_state }}" === $(this).val()) {
                 $(this).prop("selected", true);
                 return false;
             }
         });
 
-        @if (!is_null($detail_info) && $detail_info !== "")
+        @if (!is_null($user_info) && $user_info !== "")
             // 성별 selected
             $("#user_gender > option").each(function() {
-                if("{{ $detail_info->user_gender }}" === $(this).val()) {
+                if("{{ $user_info->user_gender }}" === $(this).val()) {
                     $(this).prop("selected", true);
                     return false;
                 }
@@ -298,7 +298,7 @@
 
             // 도메인 selected
             $("#domain > option").each(function () {
-                if("{{ $detail_info->domain }}" === $(this).val()) {
+                if("{{ $user_info->domain }}" === $(this).val()) {
                     $("#domain_input").hide();
                     $(this).prop("selected", true);
                     return false;
@@ -310,7 +310,7 @@
 
             // 결혼여부 checked
             $("[name=user_married]").each(function() {
-                if("{{ $detail_info->user_married }}" === $(this).val()) {
+                if("{{ $user_info->user_married }}" === $(this).val()) {
                     $(this).prop("checked", true);
                     return false;
                 }
@@ -394,6 +394,11 @@
             if ($("[name=user_tel]").val() == "") {
                 alert("전화번호를 입력해주세요.");
                 return false;
+            } else {
+                if ($("[name=user_tel]").val().length < 8) {
+                    alert("전화번호를 8글자 이상 입력해주세요.");
+                    return false;
+                }
             }
 
             if ($("[name=email]").val() == "") {
@@ -421,7 +426,7 @@
             }
 
             if(confirm("수정하시겠습니까?") === true) {
-                $("#usermod_form").attr("action", "{{ route("testuser_update", ["user_idx" => $detail_info->user_idx]) }}"+location.search);
+                $("#usermod_form").attr("action", "{{ route("testuser_update", ["user_idx" => $user_info->user_idx]) }}"+location.search);
                 $("#usermod_form").submit();
             } else {
                 return false;
@@ -430,7 +435,7 @@
 
         {{--// 탈퇴하기 클릭 시--}}
         {{--$("#del_btn").click(function() {--}}
-        {{--    location.href = "{{ route("testuser_pwdcheckview", ["user_idx" => $detail_info->user_idx]) }}" + location.search;--}}
+        {{--    location.href = "{{ route("testuser_pwdcheckview", ["user_idx" => $user_info->user_idx]) }}" + location.search;--}}
         {{--});--}}
 
         // 목록보기 클릭 시

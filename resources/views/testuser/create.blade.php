@@ -75,7 +75,7 @@
                     전화번호
                 </th>
                 <td>
-                    <input type="text" name="user_tel[]" class="form-control user_tel" maxlength="12" value="{{ old("user_tel")[0] }}" />
+                    <input type="text" name="user_tel[]" class="form-control user_tel" minlength="8" maxlength="12" value="{{ old("user_tel")[0] }}" />
                 </td>
             </tr>
             <tr>
@@ -538,91 +538,91 @@
 
             // original table 마다 validation check
             $(".original").each(function() {
-            //
-            //     if ($(this).find(".user_name").val() === "" || $(this).find(".user_name").val() === undefined) {
-            //         alert("이름을 입력해주세요.");
-            //         flag = "return";
-            //         return false;
-            //     }
-            //
-            //     $find_id = $(this).find(".user_id");
-            //
-            //     if ($find_id.val() == "") {
-            //         alert("아이디를 입력해주세요.");
-            //         flag = "return";
-            //         return false;
-            //     } else {
-            //         // 아이디 중복 확인 했는지 확인
-            //         if ($find_id.closest("tr").find($(".check_id")).val() !== "use_ok") {
-            //             alert("아이디 중복 확인을 해주세요.");
-            //             flag = "return";
-            //             return false;
-            //         }
-            //     }
-            //
-            //     $find_pwd = $(this).find(".user_pwd");
-            //
-            //     if ($find_pwd.val() == "") {
-            //         alert("비밀번호를 입력해주세요.");
-            //         flag = "return";
-            //         return false;
-            //     } else {
-            //         // 비밀번호, 비밀번호 확인 두 값이 일치 하는지 확인
-            //         if ($find_pwd.val() !== $find_pwd.closest("tr").next().find($(".user_pwd2")).val()) {
-            //             alert("비밀번호가 일치하지 않습니다.\n비밀번호를 확인해주세요.");
-            //             flag = "return";
-            //             return false;
-            //         }
-            //     }
-            //
-            //     if ($(this).find(".user_gender").val() == "") {
-            //         alert("성별을 선택해주세요.");
-            //         flag = "return";
-            //         return false;
-            //     }
-            //
-            //     if ($(this).find(".user_age").val() == "") {
-            //         alert("나이를 입력해주세요.");
-            //         flag = "return";
-            //         return false;
-            //     }
-            //
-            //     if ($(this).find(".user_tel").val() == "") {
-            //         alert("전화번호를 입력해주세요.");
-            //         flag = "return";
-            //         return false;
-            //     }
-            //
-            //     $find_email = $(this).find(".email");
-            //     find_domain_val = $find_email.closest("tr").find($(".s_domain")).val();
-            //
-            //     if ($find_email.val() == "" || find_domain_val == "__default__") {
-            //         alert("이메일을 입력해주세요.");
-            //         flag = "return";
-            //         return false;
-            //     } else {
-            //         // 이메일 유효성 확인 (도메인 제외한 아이디 값만 체크)
-            //         reg = /^[a-zA-Z][a-zA-Z0-9]{5,11}$/g;
-            //         if (!reg.test($find_email.val())) {
-            //             alert("올바른 이메일 형식이 아닙니다.");
-            //             flag = "return";
-            //             return false;
-            //         }
-            //
-            //         // 직접 입력일때 입력한 값 사용
-            //         if (find_domain_val == "user_input") {
-            //             domain = "@"+$find_email.closest("tr").find($(".i_domain")).val();
-            //         } else {
-            //             domain = "@"+find_domain_val;
-            //         }
-            //         $find_email.closest("tr").find($(".user_email")).val($find_email.val()+domain);
-            //     }
-            //
-            //     if ($(this).find(".user_check").prop("checked") == false) {
-            //         alert("개인정보 수집을 동의해주세요.");
-            //         flag = "return";
-            //         return false;
-            //     }
+
+                if ($(this).find(".user_name").val() === "" || $(this).find(".user_name").val() === undefined) {
+                    alert("이름을 입력해주세요.");
+                    flag = "return";
+                    return false;
+                }
+
+                $find_id = $(this).find(".user_id");
+
+                if ($find_id.val() == "") {
+                    alert("아이디를 입력해주세요.");
+                    flag = "return";
+                    return false;
+                } else {
+                    // 아이디 중복 확인 했는지 확인
+                    if ($find_id.closest("tr").find($(".check_id")).val() !== "use_ok") {
+                        alert("아이디 중복 확인을 해주세요.");
+                        flag = "return";
+                        return false;
+                    }
+                }
+
+                $find_pwd = $(this).find(".user_pwd");
+
+                if ($find_pwd.val() == "") {
+                    alert("비밀번호를 입력해주세요.");
+                    flag = "return";
+                    return false;
+                } else {
+                    // 비밀번호, 비밀번호 확인 두 값이 일치 하는지 확인
+                    if ($find_pwd.val() !== $find_pwd.closest("tr").next().find($(".user_pwd2")).val()) {
+                        alert("비밀번호가 일치하지 않습니다.\n비밀번호를 확인해주세요.");
+                        flag = "return";
+                        return false;
+                    }
+                }
+
+                if ($(this).find(".user_gender").val() == "") {
+                    alert("성별을 선택해주세요.");
+                    flag = "return";
+                    return false;
+                }
+
+                if ($(this).find(".user_age").val() == "") {
+                    alert("나이를 입력해주세요.");
+                    flag = "return";
+                    return false;
+                }
+
+                if ($(this).find(".user_tel").val() == "") {
+                    alert("전화번호를 입력해주세요.");
+                    flag = "return";
+                    return false;
+                }
+
+                $find_email = $(this).find(".email");
+                find_domain_val = $find_email.closest("tr").find($(".s_domain")).val();
+
+                if ($find_email.val() == "" || find_domain_val == "__default__") {
+                    alert("이메일을 입력해주세요.");
+                    flag = "return";
+                    return false;
+                } else {
+                    // 이메일 유효성 확인 (도메인 제외한 아이디 값만 체크)
+                    reg = /^[a-zA-Z][a-zA-Z0-9]{5,11}$/g;
+                    if (!reg.test($find_email.val())) {
+                        alert("올바른 이메일 형식이 아닙니다.");
+                        flag = "return";
+                        return false;
+                    }
+
+                    // 직접 입력일때 입력한 값 사용
+                    if (find_domain_val == "user_input") {
+                        domain = "@"+$find_email.closest("tr").find($(".i_domain")).val();
+                    } else {
+                        domain = "@"+find_domain_val;
+                    }
+                    $find_email.closest("tr").find($(".user_email")).val($find_email.val()+domain);
+                }
+
+                if ($(this).find(".user_check").prop("checked") == false) {
+                    alert("개인정보 수집을 동의해주세요.");
+                    flag = "return";
+                    return false;
+                }
             });
 
             if (flag === "return") {

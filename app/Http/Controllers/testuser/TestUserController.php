@@ -27,9 +27,12 @@ class TestUserController extends Controller
 
     public function __construct()
     {
+        // 유저 모델
         $this->userModel = new TestUser();
-        $this->key = md5("password");       // encrypt 암호화 인크립트 키
-        $this->openKey = "a1b2c3d4e5f6g7h8";    // encrypt 암호화 공개 키
+
+
+//        $this->key = md5("password");       // encrypt 암호화 인크립트 키
+//        $this->openKey = "a1b2c3d4e5f6g7h8";    // encrypt 암호화 공개 키
     }
 
     public function index(Request $request)
@@ -39,9 +42,16 @@ class TestUserController extends Controller
         // Validation
         // DataSet
         // Return
-        dd(base64_encode(mmLibHelper::encrypt("이름", $this->key, $this->openKey)));
 
-        dd(mmLibHelper::isValidTelNumber("01011112222"));
+//        $encode = openssl_encrypt("이름1", "AES-128-CBC", $this->key, $options=OPENSSL_RAW_DATA, $this->openKey);
+//        $decode = openssl_decrypt($encode, "AES-128-CBC", $this->key, $options=OPENSSL_RAW_DATA, $this->openKey);
+//
+//        $encode1 = openssl_encrypt("이름", "AES-128-CBC", $this->key, $options=OPENSSL_RAW_DATA, $this->openKey);
+//        $encode2 = openssl_encrypt("1", "AES-128-CBC", $this->key, $options=OPENSSL_RAW_DATA, $this->openKey);
+//        dd($encode, $decode, $encode1, $encode2);
+
+//dd(base64_encode("test1111@naver.com"), base64_encode("test1111@"), base64_encode("test"), base64_encode("naver"));
+//dd(utf8_encode("이름1"), utf8_encode("이름"), utf8_encode("1"));
 
         $conditions = array();
         $conditions["perpage"] = $request->input("perpage", 2);
@@ -55,6 +65,16 @@ class TestUserController extends Controller
         $conditions["search_type"][1] = $request->input("search_type.1", "");
         $conditions["search_keyword"][0] = $request->input("search_keyword.0", "");
         $conditions["search_keyword"][1] = $request->input("search_keyword.1", "");
+
+//        // 검색 키워드가 있으면 암호화 (아이디, 이메일, 전화번호)
+//        if ($conditions["search_keyword"][0] !== "") {
+//            $conditions["en_search_keyword"][0] = base64_encode($conditions["search_keyword"][0]);
+//            $conditions["en_search_keyword"][0] = base64_encode($conditions["search_keyword"][0]);
+////            $conditions["en_search_keyword"][0] = mmLibHelper::encrypt($conditions["search_keyword"][0], $this->key, $this->openKey);
+//        }
+//        if ($conditions["search_keyword"][1] !== "") {
+//            $conditions["en_search_keyword"][1] = base64_encode($conditions["search_keyword"][1]);
+//        }
 
         // 검색 리스트 조회
         $list = $this->userModel->getList($conditions)->paginate($conditions["perpage"]);
@@ -70,9 +90,14 @@ class TestUserController extends Controller
 
         // 암호화 저장된 데이터 복호화 출력
         foreach ($list as $value) {
-            $value->user_name = decrypt($value->user_name);
-            $value->user_email = decrypt($value->user_email);
-            $value->user_tel = decrypt($value->user_tel);
+//            $value->user_name = mmLibHelper::decrypt($value->user_name, $this->key, $this->openKey);
+//            $value->user_name = base64_decode($value->user_name);
+//            $value->user_email = base64_decode($value->user_email);
+//            $value->user_tel = base64_decode($value->user_tel);
+            $tel_arr = mmLibHelper::splitKoreanTelNumber($value->user_tel);
+            if ($tel_arr !== false) {
+                $value->user_tel = implode("-", $tel_arr);
+            }
         }
 
         $results = array("conditions" => $conditions, "data" => $data, "list" => $list);
@@ -187,7 +212,7 @@ class TestUserController extends Controller
     public function getCountMembershipPoint()
     {
         // 적립금 카운트
-        $list = $this->userModel->getCountPoint();
+        $list = $this->userModel->getCountMembershipPoint();
         $count = array("1000" => 0, "9999" => 0, "10000" => 0, "total" => 0);
 
         foreach ($list as $item) {
@@ -210,7 +235,7 @@ class TestUserController extends Controller
      */
     public function getTotalMembershipPoint()
     {
-        $list = $this->userModel->getTotalPoint();
+        $list = $this->userModel->getTotalMembershipPoint();
         $total = 0;
         foreach ($list as $item) {
             $total += $item->user_point;
@@ -224,16 +249,16 @@ class TestUserController extends Controller
      *
      * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
      */
-    public function indexDel()
+    public function indexLeave()
     {
         // 탈퇴회원 리스트 출력
         $list = $this->userModel->getLeaveList();
 
-        foreach ($list as $value) {
-            $value->user_name_decrypt = decrypt($value->user_name);
-            $value->user_email_decrypt = decrypt($value->user_email);
-            $value->user_tel_decrypt = decrypt($value->user_tel);
-        }
+//        foreach ($list as $value) {
+//            $value->user_name_decrypt = base64_decode($value->user_name);
+//            $value->user_email_decrypt = base64_decode($value->user_email);
+//            $value->user_tel_decrypt = base64_decode($value->user_tel);
+//        }
 
         return view("testuser.list_del")->with("leave_list", $list);
     }
@@ -301,32 +326,35 @@ class TestUserController extends Controller
         DB::beginTransaction();
         try {
             $queryStr = $request->query();
-            unset($queryStr["route"]);
-
-            $user = new TestUser();
+            unset($queryStr["_route_"]);
 
             $count = count($request->input("user_name"));
             for ($i=0; $i<$count; $i++) {
                 $user_info = array();
                 $user_info["user_state"] = self::ACCOUNT;                     // 신규 등록은 "사용계정" 상태로 등록
-                $user_info["user_name"] = encrypt($request->input("user_name.{$i}", ""));
-                $user_info["user_id"] = $request->input("user_id", "");
+                $user_info["user_name"] = $request->input("user_name.{$i}", "");
+//                $user_info["user_name"] = base64_encode($request->input("user_name.{$i}", ""));
+//                $user_info["user_name"] = encrypt($request->input("user_name.{$i}", ""));
+                $user_info["user_id"] = $request->input("user_id.{$i}", "");
                 $user_info["user_pwd"] = hash("sha512", $request->input("user_pwd.{$i}", ""), false);
                 $user_info["user_age"] = $request->input("user_age.{$i}", 0);
                 $user_info["user_gender"] = $request->input("user_gender.{$i}", "");
-                $user_info["user_email"] = encrypt($request->input("user_email.{$i}", ""));
-                $user_info["user_tel"] = encrypt($request->input("user_tel.{$i}", ""));
+                $user_info["user_email"] = $request->input("user_email.{$i}", "");
+                $user_info["user_tel"] = $request->input("user_tel.{$i}", "");
+//                $user_info["user_email"] = base64_encode($request->input("user_email.{$i}", ""));
+//                $user_info["user_tel"] = base64_encode($request->input("user_tel.{$i}", ""));
                 $user_info["user_point"] = preg_replace("/[^0-9]/m", "", $request->input("user_point.{$i}", 0));
                 $user_info["user_married"] = $request->input("user_married.{$i}");
                 $user_info["user_remark"] = $request->input("user_remark.{$i}");
-                $user_info["user_zip"] = $request->input("user_zip.{$i}");
-                $user_info["user_addr"] = $request->input("user_addr.{$i}");
-                $user_info["user_addr_detail"] = $request->input("user_addr_detail.{$i}");
+                $user_info["user_zip"] = $request->input("user_zip.{$i}", "");
+                $user_info["user_addr"] = $request->input("user_addr.{$i}", "");
+                $user_info["user_addr_detail"] = $request->input("user_addr_detail.{$i}", "");
                 // user_order
-                $order = $user->getLastOrder();
+                $order = $this->userModel->getLastOrder();
                 $user_info["user_order"] = $order + 1;
 
-                $user_idx = $user->saveUser($user_info);
+                // 유저 정보 저장
+                $user_idx = $this->userModel->setSave($user_info);
 
                 // model return 값이 숫자가 아니고 1보다 작을때 back
                 if (is_numeric($user_idx) && $user_idx <= 0) {
@@ -334,15 +362,14 @@ class TestUserController extends Controller
                 }
 
                 // 파일 DB 저장
-                if (!empty($request->file("user_file")[$i])) {
-                    $this->fileSave($request->file("user_file")[$i], $user_idx);
+                if (!empty($request->file("user_file.{$i}"))) {
+                    $this->fileSave($request->file("user_file.{$i}"), $user_idx);
                 }
             }
             DB::commit();
         } catch (\Exception $exception) {
             DB::rollBack();
             throw new \Exception($exception);
-//            return back()->withInput()->with("message", $exception);
         }
 
         return redirect()->route("testuser_index", $queryStr)->with("message", config("test_user.test_con.message.success"));
@@ -361,10 +388,9 @@ class TestUserController extends Controller
         $file_extension = $file->getClientOriginalExtension();
         $file_info["user_idx"] = $user_idx;
         $file_info["file_original_name"] = $file->getClientOriginalName();
-        $file_info["file_save_name"] = $user_idx."_".md5_file($file).'.'.$file_extension;
+        $file_info["file_save_name"] = $user_idx."_".md5_file($file).".".$file_extension;
 
-//        $file->move("uploads/", $file_info["file_save_name"]);
-        Storage::disk('local')->put($file_info["file_save_name"],  File::get($file));
+        Storage::disk("local")->put($file_info["file_save_name"],  File::get($file));
 
         $fileModel = new TestFile();
         $fileModel->saveFile($file_info);
@@ -384,15 +410,16 @@ class TestUserController extends Controller
             abort(404);
         }
 
-        $user = new TestUser();
-        $detail_info = $user->getUserDetail($id);
-        $detail_info->user_name_decrypt = decrypt($detail_info->user_name);
-        $detail_info->user_email_decrypt = decrypt($detail_info->user_email);
-        $detail_info->user_tel_decrypt = decrypt($detail_info->user_tel);
-        $detail_info->user_point = number_format($detail_info->user_point);
-        $detail_info->user_tel_decrypt = substr($detail_info->user_tel_decrypt, 0, 3) . "-" . substr($detail_info->user_tel_decrypt, 3, 4) . "-" . substr($detail_info->user_tel_decrypt, 7);
-
-        return view("testuser.detail")->with("detail_info", $detail_info);
+        $user_info = $this->userModel->getInfo($id);
+//        $user_info->user_name_decrypt = base64_decode($user_info->user_name);
+//        $user_info->user_email_decrypt = base64_decode($user_info->user_email);
+//        $user_info->user_tel_decrypt = base64_decode($user_info->user_tel);
+        $user_info->user_point = number_format($user_info->user_point);
+        $tel_arr = mmLibHelper::splitKoreanTelNumber($user_info->user_tel);
+        if ($tel_arr !== false) {
+            $user_info->user_tel = implode("-", $tel_arr);
+        }
+        return view("testuser.detail")->with("user_info", $user_info);
     }
 
     /**
@@ -407,18 +434,20 @@ class TestUserController extends Controller
             abort(404);
         }
 
-        $user = new TestUser();
-        $detail_info = $user->getUserDetail($id);
-        $detail_info->user_pwd = "";
-        $detail_info->user_name_decrypt = decrypt($detail_info->user_name);
-        $detail_info->user_email_decrypt = decrypt($detail_info->user_email);
-        $detail_info->user_tel_decrypt = decrypt($detail_info->user_tel);
-        $email = explode("@", $detail_info->user_email_decrypt);
-        $detail_info->email = $email[0];
-        $detail_info->domain = $email[1];
-        $detail_info->user_point = number_format($detail_info->user_point);
+        $user_info = $this->userModel->getInfo($id);
+        $user_info->user_pwd = "";
+//        $user_info->user_name_decrypt = base64_decode($user_info->user_name);
+//        $user_info->user_email_decrypt = base64_decode($user_info->user_email);
+//        $user_info->user_tel_decrypt = base64_decode($user_info->user_tel);
 
-        return view("testuser.modify")->with("detail_info", $detail_info);
+        if (strpos($user_info->user_email, "@")) {
+            $email = explode("@", $user_info->user_email);
+            $user_info->email = $email[0];
+            $user_info->domain = $email[1];
+        }
+        $user_info->user_point = number_format($user_info->user_point);
+
+        return view("testuser.modify")->with("user_info", $user_info);
     }
 
 
@@ -457,56 +486,69 @@ class TestUserController extends Controller
             return back()->withErrors($validator)->withInput();
         }
 
-        if ($request->input("check_pwd") != "") {
-            $check_pwd = $this->checkPwd($id, $request->input("check_pwd"));
-            if ($check_pwd === false) {
+
+        // 기존 비번, 변경할 비번, 변경할 비번 확인
+        $password["check_pwd"] = $request->input("check_pwd", "");
+        $password["user_pwd"] = $request->input("user_pwd", "");
+        $password["user_pwd2"] = $request->input("user_pwd2", "");
+
+        // 기존 비밀번호가 입력 되었다면 기존 비밀번호가 동일한 지 확인
+        if ($password["check_pwd"] != "") {
+            $check_pwd = $this->checkPwd($id, $password["check_pwd"]);
+            if ($check_pwd === "pwd_check_no") {
                 return back()->withInput()->with("message", config("test_user.test_con.message.not_match_pwd"));
             }
         } else {
             return back()->withInput()->with("message", config("test_user.test_con.message.input_pwd"));
         }
 
-        $user_info = array();
-
-        if ($request->input("user_pwd") != "" && $request->input("user_pwd") === $request->input("user_pwd2")) {
+        // 변경할 비밀번호 === 변경할 비밀번호 확인 -> 비밀번호 암호화 진행
+        if ($password["user_pwd"] != "" && $password["user_pwd"] === $password["user_pwd2"]) {
             $encrypted_pwd = hash("sha512", $request->input("user_pwd"), false);
             $user_info["user_pwd"] = $encrypted_pwd;
-        } else if ($request->input("user_pwd") != "" && $request->input("user_pwd") !== $request->input("user_pwd2")) {
+        } else if ($password["user_pwd"] != "" && $password["user_pwd"] !== $password["user_pwd"]) {
             return back()->withInput()->with("message", "변경할 " . config("test_user.test_con.message.not_match_pwd"));
         }
 
         DB::beginTransaction();
         try {
             $queryStr = $request->query();
-            unset($queryStr["route"]);
+            unset($queryStr["_route_"]);
 
-            $user = new TestUser();
             $now = new \DateTime();
+            $user_info = array();
 
-            $user_point = preg_replace("/[^0-9]/", "", $request->input("user_point"));
-            $encrypted_email = encrypt($request->input("user_email"));
-            $encrypted_tel = encrypt($request->input("user_tel"));
+            // 포인트 숫자 외 전부 replace
+            $user_point = preg_replace("/[^0-9]/", "", $request->input("user_point", 0));
+            // 암호화 저장
+//            $encrypted_email = base64_encode($request->input("user_email", ""));
+//            $encrypted_tel = base64_encode($request->input("user_tel", ""));
 
             $user_info["user_state"] = $request->input("user_state", self::ACCOUNT);
-            $user_info["user_age"] = $request->input("user_age");
-            $user_info["user_gender"] = $request->input("user_gender");
-            $user_info["user_email"] = $encrypted_email;
-            $user_info["user_tel"] = $encrypted_tel;
+            $user_info["user_age"] = $request->input("user_age", 0);
+            $user_info["user_gender"] = $request->input("user_gender", "");
+            $user_info["user_email"] = $request->input("user_email", "");
+            $user_info["user_tel"] = $request->input("user_tel", "");
             $user_info["user_married"] = $request->input("user_married");
             $user_info["user_point"] = $user_point;
-            $user_info["user_zip"] = $request->input("user_zip");
-            $user_info["user_addr"] = $request->input("user_addr");
-            $user_info["user_addr_detail"] = $request->input("user_addr_detail");
+            $user_info["user_zip"] = $request->input("user_zip", "");
+            $user_info["user_addr"] = $request->input("user_addr", "");
+            $user_info["user_addr_detail"] = $request->input("user_addr_detail", "");
             $user_info["user_remark"] = $request->input("user_remark");
             $user_info["updated_at"] = $now->format("Y-m-d H:i:s");
 
-            $result = $user->modUser($user_info, $id);
+            $result = $this->userModel->modUser($user_info, $id);
 
             // 파일 DB 업데이트
-            if (empty($request->input("file_idx")) && !is_null($request->file("user_file")) && $request->file("user_file") != "") {
-                $this->fileSave($request->file("user_file"), $id);
-            } else if (!empty($request->input("file_idx")) && !is_null($request->file("user_file")) && $request->file("user_file") != "") {
-                $this->fileUpdate($request->file("user_file"), $request->input("file_idx"), $request->input("file_save_name"), $id);
+            $file["file_idx"] = $request->input("file_idx", 0);
+            $file["user_file"] = $request->file("user_file", 0);
+            $file["user_file"] = $request->file("user_file", 0);
+
+            // 기존에 저장된 파일이 없다면 새로 등록, 있으면 업데이트
+            if (empty($file["file_idx"]) && !is_null($file["user_file"]) && $file["user_file"] != "") {
+                $this->fileSave($file["user_file"], $id);
+            } else if (!empty($file["file_idx"]) && !is_null($file["user_file"]) && $file["user_file"] != "") {
+                $this->fileUpdate($file["user_file"], $file["file_idx"], $request->input("file_save_name"), $id);
             }
 
             DB::commit();
@@ -534,14 +576,12 @@ class TestUserController extends Controller
 
         $file_extension = $file->getClientOriginalExtension();
         $file_info["file_original_name"] = $file->getClientOriginalName();
-        $file_info["file_save_name"] = $user_idx."_".md5_file($file).'.'.$file_extension;
+        $file_info["file_save_name"] = $user_idx."_".md5_file($file).".".$file_extension;
 
         if ($file_save_name != "") {
             Storage::disk("local")->delete($file_save_name);
-//            unlink("uploads/".$file_save_name);
         }
 
-//        $file->move("uploads/", $file_info["file_save_name"]);
         Storage::disk("local")->put($file_info["file_save_name"],  File::get($file));
 
         $fileModel = new TestFile();
@@ -567,10 +607,9 @@ class TestUserController extends Controller
         DB::beginTransaction();
         try {
             $queryStr = $request->query();
-            unset($queryStr["route"]);
+            unset($queryStr["_route_"]);
 
-            $user = new TestUser();
-            $user->delUser($id);
+            $this->userModel->setLeave($id);
 
             DB::commit();
         } catch (\Exception $exception) {
@@ -591,7 +630,7 @@ class TestUserController extends Controller
     public function allDestroy(Request $request)
     {
         // 일괄삭제하기
-        $idx_arr = $request->input('idx_arr');
+        $idx_arr = $request->input("idx_arr", array());
 
         if (is_null($idx_arr) && count($idx_arr) <= 0) {
             $res = array("result" => "", "message" => config("test_user.test_con.message.delete_input"));
@@ -603,9 +642,8 @@ class TestUserController extends Controller
 
         DB::beginTransaction();
         try {
-            $user = new TestUser();
 
-            $user->userAllDel($idx_arr);
+            $this->userModel->setAllLeave($idx_arr);
 
             $result = "all_delete_ok";
             $message = config("test_user.test_con.message.delete");
@@ -629,7 +667,7 @@ class TestUserController extends Controller
     public function restore(Request $request)
     {
         // 복구
-        $user_idx = $request->input("user_idx");
+        $user_idx = $request->input("user_idx", 0);
         if (!is_numeric($user_idx) || $user_idx == "") {
             $res = array("result" => "", "message" => config("test_user.test_con.message.error"));
             return response()->json($res);
@@ -640,9 +678,8 @@ class TestUserController extends Controller
 
         DB::beginTransaction();
         try {
-            $user = new TestUser();
 
-            $user->userRestore($user_idx);
+            $this->userModel->setRestore($user_idx);
 
             $result = "restore_ok";
             $message = config("test_user.test_con.message.restore");
@@ -665,7 +702,7 @@ class TestUserController extends Controller
     public function allRestore(Request $request)
     {
         // 전체 복구
-        $idx_arr = $request->input("idx_arr");
+        $idx_arr = $request->input("idx_arr", array());
 
         if (is_null($idx_arr) && count($idx_arr) <= 0) {
             $res = array("result" => "", "message" => config("test_user.test_con.message.restore_input"));
@@ -677,9 +714,7 @@ class TestUserController extends Controller
 
         DB::beginTransaction();
         try {
-            $user = new TestUser();
-
-            $user->userAllRestore($idx_arr);
+            $this->userModel->setAllRestore($idx_arr);
 
             $result = "all_restore_ok";
             $message = config("test_user.test_con.message.restore");
@@ -707,8 +742,7 @@ class TestUserController extends Controller
             return response()->json($res);
         }
 
-        $user = new TestUser();
-        $data = $user->getCheckId($request->input("user_id"));
+        $data = $this->userModel->getCheckId($request->input("user_id", ""));
 
         if ($data->isNotEmpty()) {     // 조회된 데이터가 있을 때 아이디 사용 불가
             $result = "use_no";
@@ -744,10 +778,9 @@ class TestUserController extends Controller
     public function checkPwd($id, $pwd)
     {
         // 비밀번호 체크
-        $user = new TestUser();
 
         $encrypted_passwd = hash("sha512", $pwd, false);
-        $data = $user->checkPwd($id, $encrypted_passwd);
+        $data = $this->userModel->getCheckPwd($id, $encrypted_passwd);
 
         if ($data->isNotEmpty()) {       // 비밀번호 일치하는 데이터가 있으면 삭제 가능
             $pwd_check = "pwd_check_ok";
@@ -766,17 +799,16 @@ class TestUserController extends Controller
     public function pwdCheck(Request $request)
     {
         // 비밀번호 체크 ajax
-        $user_idx = $request->input("user_idx");
-        $user_pwd = $request->input("user_pwd");
+        $user_idx = $request->input("user_idx", 0);
+        $user_pwd = $request->input("user_pwd", "");
 
         if ($user_idx == "" || $user_pwd == null) {
             $res = array("result" => "", "message" => config("test_user.test_con.message.input_pwd"));
             return response()->json($res);
         }
-        $user = new TestUser();
 
         $encrypted_passwd = hash("sha512", $user_pwd, false);
-        $data = $user->checkPwd($user_idx, $encrypted_passwd);
+        $data = $this->userModel->getCheckPwd($user_idx, $encrypted_passwd);
 
         if ($data->isNotEmpty()) {     // 비밀번호 일치하는 데이터가 있으면 삭제 가능
             $result = "pwd_check_ok";
@@ -799,15 +831,14 @@ class TestUserController extends Controller
      */
     public function upIndex(Request $request)
     {
-        $user_idx = $request->input("user_idx");
-        $user_order = $request->input("user_order");
-        $prev_user_idx = $request->input("prev_user_idx");
+        $user_idx = $request->input("user_idx", 0);
+        $user_order = $request->input("user_order", 0);
+        $prev_user_idx = $request->input("prev_user_idx", 0);
 
         $result = "";
         DB::beginTransaction();
         try {
-            $user = new TestUser();
-            $user->upIndex($user_order, $user_idx, $prev_user_idx);
+            $this->userModel->setUpOrder($user_order, $user_idx, $prev_user_idx);
             $result = "change_success";
 
             DB::commit();
@@ -829,15 +860,14 @@ class TestUserController extends Controller
      */
     public function downIndex(Request $request)
     {
-        $user_idx = $request->input("user_idx");
-        $user_order = $request->input("user_order");
-        $next_user_idx = $request->input("next_user_idx");
+        $user_idx = $request->input("user_idx", 0);
+        $user_order = $request->input("user_order", 0);
+        $next_user_idx = $request->input("next_user_idx", 0);
 
         $result = "";
         DB::beginTransaction();
         try {
-            $user = new TestUser();
-            $user->downIndex($user_order, $user_idx, $next_user_idx);
+            $this->userModel->setDownOrder($user_order, $user_idx, $next_user_idx);
             $result = "change_success";
 
             DB::commit();

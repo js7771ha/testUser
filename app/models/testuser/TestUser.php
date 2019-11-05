@@ -44,19 +44,14 @@ class TestUser extends Model
                 $listModel->where("user_gender", $conditions["user_gender"]);
             })
             // 검색어
-            ->when($conditions["search_type"][0] !== "", function ($listModel) use ($conditions) {
+            ->when(!is_null($conditions["search_type"][0]) && $conditions["search_type"][0] !== "", function ($listModel) use ($conditions) {
                 $listModel->where(function ($listModel) use ($conditions) {
                     // 검색어 1
-                    if (!is_null($conditions["search_keyword"][0]) && $conditions["search_keyword"][0] !== "") {
-                        $conditions["en_search_keyword"][0] = encrypt($conditions["search_keyword"][0]);
-                    }
-                    $listModel->where("{$conditions["search_type"][0]}", "like", "%{$conditions["en_search_keyword"][0]}%");
+                    $listModel->where("{$conditions["search_type"][0]}", "like", "%{$conditions["search_keyword"][0]}%");
+//                    $listModel->where("{$conditions["search_type"][0]}", "like", "%{$conditions["en_search_keyword"][0]}%");
                     // 검색어 2
-                    if (!is_null($conditions["search_keyword"][1]) && $conditions["search_keyword"][1] !== "") {
-                        $conditions["en_search_keyword"][1] = encrypt($conditions["search_keyword"][1]);
-                    }
-                    if ($conditions["search_type"][1] !== "") {
-                        $listModel->orwhere($conditions["search_type"][1], "like", "%{$conditions["en_search_keyword"][1]}%");
+                    if (!is_null($conditions["search_type"][1]) && $conditions["search_type"][1] !== "") {
+                        $listModel->orwhere($conditions["search_type"][1], "like", "%{$conditions["search_keyword"][1]}%");
                     }
                 });
             })
@@ -180,7 +175,7 @@ class TestUser extends Model
      * @return mixed
      */
 
-    public function getTotalPoint()
+    public function getTotalMembershipPoint()
     {
         $sum = $this->select("user_point", DB::raw("SUM(user_point) as total"))->groupBy("user_point")->get();
 
@@ -194,7 +189,7 @@ class TestUser extends Model
      * @return mixed
      */
 
-    public function getCountPoint()
+    public function getCountMembershipPoint()
     {
         $sum = $this->select("user_point", DB::raw("count(*) as count"))->groupBy("user_point")->get();
 
@@ -208,7 +203,7 @@ class TestUser extends Model
      * @param int $user_idx
      * @return mixed
      */
-    public function getUserDetail(int $user_idx=0)
+    public function getInfo(int $user_idx=0)
     {
         // 유저 정보
         if ($user_idx <= 0) {
@@ -253,7 +248,7 @@ class TestUser extends Model
      * @param  array $user_info
      * @return int $user_idx
      */
-    public function saveUser($user_info)
+    public function setSave($user_info)
     {
         // 저장
 //        $this->insert($user_info);
@@ -269,7 +264,7 @@ class TestUser extends Model
      * @param  int $pwd
      * @return
      */
-    public function checkPwd($id, $pwd)
+    public function getCheckPwd($id, $pwd)
     {
         $data = $this->select("user_idx")
             ->where("user_idx", "=", $id)
@@ -304,7 +299,7 @@ class TestUser extends Model
      *
      * @param int $id
      */
-    public function delUser(int $id=0)
+    public function setLeave(int $id=0)
     {
         // 삭제
         if ($id <= 0) {
@@ -321,7 +316,7 @@ class TestUser extends Model
      * @param  array $idx_arr
      * @throws
      */
-    public function userAllDel(array $idx_arr=[])
+    public function setAllLeave(array $idx_arr=[])
     {
         // 일괄 삭제
         if (count($idx_arr) == 0) {
@@ -356,14 +351,14 @@ class TestUser extends Model
      *
      * @param  int $id
      */
-    public function userRestore(int $id)
+    public function setRestore(int $id)
     {
         // 탈퇴계정 복구
         if ($id <= 0) {
             abort(404);
         }
 
-        $this->where("user_idx", "=", $id)->update(["user_state"=>"1"]);
+        $this->where("user_idx", "=", $id)->update(["user_state"=>"2"]);
     }
 
     /**
@@ -371,14 +366,14 @@ class TestUser extends Model
      *
      * @param  array $idx_arr
      */
-    public function userAllRestore(array $idx_arr=[])
+    public function setAllRestore(array $idx_arr=[])
     {
         // 탈퇴계정 복구
         if (count($idx_arr) == 0) {
             abort(404);
         }
 
-        $this->wherein("user_idx", $idx_arr)->update(["user_state"=>"1"]);
+        $this->wherein("user_idx", $idx_arr)->update(["user_state"=>"2"]);
     }
 
     /**
@@ -400,7 +395,7 @@ class TestUser extends Model
      * @param int $user_idx
      * @param int $prev_user_idx
      */
-    public function upIndex(int $user_order=0, int $user_idx=0, int $prev_user_idx=0)
+    public function setUpOrder(int $user_order=0, int $user_idx=0, int $prev_user_idx=0)
     {
         $prev_out_index = $this->where("user_idx", "=", $prev_user_idx)->value("user_order");
 
@@ -416,7 +411,7 @@ class TestUser extends Model
      * @param int $user_idx
      * @param int $prev_user_idx
      */
-    public function downIndex(int $user_order=0, int $user_idx=0, int $next_user_idx=0)
+    public function setDownOrder(int $user_order=0, int $user_idx=0, int $next_user_idx=0)
     {
         $next_out_index = $this->where("user_idx", "=", $next_user_idx)->value("user_order");
         $this->where("user_idx", "=", $next_user_idx)->update(["user_order"=>$user_order]);
