@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\testuser;
 
+use App\helpers\mmLibHelper;
 use App\Http\Controllers\Controller;
 use App\models\testfile\TestFile;
 use App\models\testuser\TestUser;
@@ -24,61 +25,60 @@ class TestUserController extends Controller
     const ACCOUNT = "1";
     const DORMANCY = "2";
 
+    public function __construct()
+    {
+        $this->userModel = new TestUser();
+        $this->key = md5("password");       // encrypt 암호화 인크립트 키
+        $this->openKey = "a1b2c3d4e5f6g7h8";    // encrypt 암호화 공개 키
+    }
+
     public function index(Request $request)
     {
-
-        $user = new TestUser();
-        $search = array();
-
         // Request
-        $perpage = $request->input("perpage", 2);
-        $search["user_state"] = $request->input("user_state", array(self::ACCOUNT, self::DORMANCY));
-        $search["user_gender"] = $request->input("user_gender", "all");
-        $search["order_type"] = $request->input("order_type", "");
-        $search["order_style"] = $request->input("order_style", "");
-        $search["search_date"]["from_date"] = $request->input("from_date", "");
-        $search["search_date"]["to_date"] = $request->input("to_date", "");
-        $search["search_type"][0] = $request->input("search_type.0", "");
-        $search["search_type"][1] = $request->input("search_type.1", "");
-        $search["search_keyword"][0] = $request->input("search_keyword.0", "");
-        $search["search_keyword"][1] = $request->input("search_keyword.1", "");
-
-        if ($search["search_date"]["to_date"] != "") {
-            $search["search_date"]["to_date"] = date("Y-m-d", strtotime($search["search_date"]["to_date"] . " + 1 days"));    // 0시 부터 0시까지 검색 이기때문에 +1일 후 검색)
-        }
-
-        dd($request->all(), $search);
         // Define
         // Validation
-
         // DataSet
+        // Return
+        dd(base64_encode(mmLibHelper::encrypt("이름", $this->key, $this->openKey)));
 
+        dd(mmLibHelper::isValidTelNumber("01011112222"));
+
+        $conditions = array();
+        $conditions["perpage"] = $request->input("perpage", 2);
+        $conditions["user_state"] = $request->input("user_state", array("all", self::ACCOUNT, self::DORMANCY));
+        $conditions["user_gender"] = $request->input("user_gender", "all");
+        $conditions["order_type"] = $request->input("order_type", "");
+        $conditions["order_style"] = $request->input("order_style", "");
+        $conditions["search_date"]["from_date"] = $request->input("from_date", "");
+        $conditions["search_date"]["to_date"] = $request->input("to_date", "");
+        $conditions["search_type"][0] = $request->input("search_type.0", "");
+        $conditions["search_type"][1] = $request->input("search_type.1", "");
+        $conditions["search_keyword"][0] = $request->input("search_keyword.0", "");
+        $conditions["search_keyword"][1] = $request->input("search_keyword.1", "");
 
         // 검색 리스트 조회
-        $user_list = $user->getList("del_except_list", $search)->paginate($perpage);
-
+        $list = $this->userModel->getList($conditions)->paginate($conditions["perpage"]);
         // 검색 리스트 카운트 조회
-        $user_list_count = $user->getUserListModelCount("del_except_list", $search);
+        $data = array();
+        $data["count_list"] = $this->userModel->getCount($conditions);
+        $data["state"] = $this->getCountState();                     // 계정 카운트
+        $data["age"] = $this->getCountAge();                         // 연령 카운트
+        $data["gender"] = $this->getCountGender();                   // 성별 카운트
+        $data["count_point"] = $this->getCountMembershipPoint();     // 포인트 카운트
+        $data["total_point"] = $this->getTotalMembershipPoint();     // 포인트 total
+        $data["avg_age"] = $this->getAvgAge();                       // 평균 연령대
 
         // 암호화 저장된 데이터 복호화 출력
-        foreach ($user_list as $value) {
+        foreach ($list as $value) {
             $value->user_name = decrypt($value->user_name);
             $value->user_email = decrypt($value->user_email);
             $value->user_tel = decrypt($value->user_tel);
-            $value->user_tel =
-                substr($value->user_tel, 0, 3)."-".
-                substr($value->user_tel, 3, 4)."-".
-                substr($value->user_tel, 7);
         }
 
-        $count_all = array();
-        $count_all["state"] = $this->countState();      // 계정 카운트
-        $count_all["age"] = $this->countAge();          // 연령 카운트
-        $count_all["gender"] = $this->countGender();    // 성별 카운트
-        $count_all["point"] = $this->countPoint();      // 포인트 카운트
-        $total_point = $this->totalPoint();             // total
-        $avg_age = $this->avgAge();                     // 평균 연령대
+        $results = array("conditions" => $conditions, "data" => $data, "list" => $list);
+        return view("testuser.list")->with("results", $results);
 
+    }
         /*
 
         $datas = array();
@@ -92,46 +92,30 @@ class TestUserController extends Controller
         Date >> 검색조건 (Between => 조건식)
         */
 
-        // 조회 후 가입일 검색 중 종료일 원래 입력된 데이터 값으로 변경
-        $search["search_date"]['to_date'] = $request->input("to_date", "");
-
-        // Return
-        return view("testuser.list")
-            ->with("user_list", $user_list)
-            ->with("perpage", $perpage)
-            ->with("search", $search)
-            ->with("user_list_count", $user_list_count)
-            ->with("total_point", $total_point)
-            ->with("avg_age", $avg_age)
-            ->with("count_all", $count_all);
-       }
-
 
     /**
      * 계정별 카운트 조회
      *
      * @return array
      */
-    public function countState()
+    public function getCountState()
     {
         // 계정별 카운트
-        $user = new TestUser();
+        $list = $this->userModel->getCountState();
+        $count = array("all" => 0, "account" => 0, "dormancy" => 0, "leaveAccount" => 0);
 
-        $count_collection_state = $user->getCountState();
-        $count_state = array("all" => 0, "account" => 0, "dormancy" => 0, "leaveAccount" => 0);
-
-        foreach ($count_collection_state as $item) {
+        foreach ($list as $item) {
             if ($item->user_state == self::ACCOUNT) {
-                $count_state["account"] = $item->count;
+                $count["account"] = $item->count;
             } else if ($item->user_state == self::DORMANCY) {
-                $count_state["dormancy"] = $item->count;
+                $count["dormancy"] = $item->count;
             } else if ($item->user_state == self::LEAVEACCOUNT) {
-                $count_state["leaveAccount"] = $item->count;
+                $count["leaveAccount"] = $item->count;
             }
-            $count_state["all"] += $item->count;
+            $count["all"] += $item->count;
         }
 
-        return $count_state;
+        return $count;
     }
 
     /**
@@ -139,27 +123,25 @@ class TestUserController extends Controller
      *
      * @return array
      */
-    public function countAge()
+    public function getCountAge()
     {
         // 연령대별 카운트
-        $user = new TestUser();
+        $list = $this->userModel->getCountAge();
+        $count = array("10" => 0, "20~30" => 0, "40~50" => 0, "60" => 0);
 
-        $count_collection_age = $user->getCountAge();
-        $count_age = array("teen" => 0, "two_three" => 0, "four_five" => 0, "six" => 0);
-
-        foreach ($count_collection_age as $item) {
+        foreach ($list as $item) {
             if ($item->user_age < 20) {
-                $count_age["teen"] += $item->count;
+                $count["10"] += $item->count;
             } else if ($item->user_age >= 20 && $item->user_age < 40) {
-                $count_age["two_three"] += $item->count;
+                $count["20~30"] += $item->count;
             } else if ($item->user_age >= 40 && $item->user_age < 60) {
-                $count_age["four_five"] += $item->count;
+                $count["40~50"] += $item->count;
             } else {
-                $count_age["six"] += $item->count;
+                $count["60"] += $item->count;
             }
         }
 
-        return $count_age;
+        return $count;
     }
 
     /**
@@ -167,14 +149,12 @@ class TestUserController extends Controller
      *
      * @return array
      */
-    public function avgAge()
+    public function getAvgAge()
     {
         // 평균 연령대
-        $user = new TestUser();
+        $avg = round($this->userModel->getAvgAge());
 
-        $avg_age = round($user->getAvgAge());
-
-        return $avg_age;
+        return $avg;
     }
 
     /**
@@ -182,23 +162,21 @@ class TestUserController extends Controller
      *
      * @return array
      */
-    public function countGender()
+    public function getCountGender()
     {
         // 성별 카운트
-        $user = new TestUser();
+        $list = $this->userModel->getCountGender();
+        $count = array("male" => 0, "female" => 0);
 
-        $count_collection_gender = $user->getCountGender();
-        $count_gender = array("male" => 0, "female" => 0);
-
-        foreach ($count_collection_gender as $item) {
+        foreach ($list as $item) {
             if ($item->user_gender == "1") {
-                $count_gender["male"] = $item->count;
+                $count["male"] = $item->count;
             } else {
-                $count_gender["female"] = $item->count;
+                $count["female"] = $item->count;
             }
         }
 
-        return $count_gender;
+        return $count;
     }
 
     /**
@@ -206,25 +184,23 @@ class TestUserController extends Controller
      *
      * @return array
      */
-    public function countPoint()
+    public function getCountMembershipPoint()
     {
         // 적립금 카운트
-        $user = new TestUser();
+        $list = $this->userModel->getCountPoint();
+        $count = array("1000" => 0, "9999" => 0, "10000" => 0, "total" => 0);
 
-        $count_collection_point = $user->getCountPoint();
-        $count_point = array("1000" => 0, "9999" => 0, "10000" => 0, "total" => 0);
-
-        foreach ($count_collection_point as $item) {
+        foreach ($list as $item) {
             if ($item->user_point < 1000) {
-                $count_point["1000"] += $item->count;
+                $count["1000"] += $item->count;
             } else if ($item->user_point >= 1000 && $item->user_point < 10000) {
-                $count_point["9999"] += $item->count;
+                $count["9999"] += $item->count;
             } else {
-                $count_point["10000"] += $item->count;
+                $count["10000"] += $item->count;
             }
         }
 
-        return $count_point;
+        return $count;
     }
 
     /**
@@ -232,17 +208,15 @@ class TestUserController extends Controller
      *
      * @return int
      */
-    public function totalPoint()
+    public function getTotalMembershipPoint()
     {
-        $user = new TestUser();
-
-        $total_collection_point = $user->getTotalPoint();
-        $total_point = 0;
-        foreach ($total_collection_point as $item) {
-            $total_point += $item->user_point;
+        $list = $this->userModel->getTotalPoint();
+        $total = 0;
+        foreach ($list as $item) {
+            $total += $item->user_point;
         }
 
-        return $total_point;
+        return $total;
     }
 
     /**
@@ -253,17 +227,15 @@ class TestUserController extends Controller
     public function indexDel()
     {
         // 탈퇴회원 리스트 출력
-        $user = new TestUser();
-        $search = array();
+        $list = $this->userModel->getLeaveList();
 
-        $user_list = $user->getUserListModel("del_list", $search)->get();
-        foreach ($user_list as $value) {
+        foreach ($list as $value) {
             $value->user_name_decrypt = decrypt($value->user_name);
             $value->user_email_decrypt = decrypt($value->user_email);
             $value->user_tel_decrypt = decrypt($value->user_tel);
         }
 
-        return view("testuser.list_del")->with("user_list", $user_list);
+        return view("testuser.list_del")->with("leave_list", $list);
     }
 
 
@@ -287,7 +259,6 @@ class TestUserController extends Controller
     public function store(Request $request)
     {
         // 저장하기
-//        $this->fileSave($request->file("user_file")[0], 1);
         $rules = [
             "user_name.*" => "required",
             "user_id.*" => "required|alpha_dash",
@@ -330,39 +301,30 @@ class TestUserController extends Controller
         DB::beginTransaction();
         try {
             $queryStr = $request->query();
-            array_shift($queryStr);
+            unset($queryStr["route"]);
 
             $user = new TestUser();
 
-            foreach ($request->input("user_name") as $key => $value) {
-
-                // 이름, 이메일, 전화번호 암호화 (복호화 가능하도록)
-                $encrypted_name = encrypt($request->input("user_name")[$key]);
-                $encrypted_email = encrypt($request->input("user_email")[$key]);
-                $encrypted_tel = encrypt($request->input("user_tel")[$key]);
-                // 비밀번호 암호화
-                $encrypted_passwd = hash("sha512", $request->input("user_pwd")[$key], false);
-
-                // 포인트 기호 제거
-                $user_point = preg_replace("/[^0-9]/m", "", $request->input("user_point")[$key]);
-
+            $count = count($request->input("user_name"));
+            for ($i=0; $i<$count; $i++) {
                 $user_info = array();
                 $user_info["user_state"] = self::ACCOUNT;                     // 신규 등록은 "사용계정" 상태로 등록
-                $user_info["user_name"] = $encrypted_name;
-                $user_info["user_id"] = $request->input("user_id")[$key];
-                $user_info["user_pwd"] = $encrypted_passwd;
-                $user_info["user_age"] = $request->input("user_age.{$key}");
-                $user_info["user_gender"] = $request->input("user_gender")[$key];
-                $user_info["user_email"] = $encrypted_email;
-                $user_info["user_tel"] = $encrypted_tel;
-                $user_info["user_point"] = $user_point;
-                $user_info["user_married"] = $request->input("user_married")[$key];
-                $user_info["user_remark"] = $request->input("user_remark")[$key];
-                $user_info["user_zip"] = $request->input("user_zip")[$key];
-                $user_info["user_addr"] = $request->input("user_addr")[$key];
-                $user_info["user_addr_detail"] = $request->input("user_addr_detail")[$key];
-                $user_info["user_order"] = $user->getCountStateUseSave();
-                $user_info["user_order"] += 1;
+                $user_info["user_name"] = encrypt($request->input("user_name.{$i}", ""));
+                $user_info["user_id"] = $request->input("user_id", "");
+                $user_info["user_pwd"] = hash("sha512", $request->input("user_pwd.{$i}", ""), false);
+                $user_info["user_age"] = $request->input("user_age.{$i}", 0);
+                $user_info["user_gender"] = $request->input("user_gender.{$i}", "");
+                $user_info["user_email"] = encrypt($request->input("user_email.{$i}", ""));
+                $user_info["user_tel"] = encrypt($request->input("user_tel.{$i}", ""));
+                $user_info["user_point"] = preg_replace("/[^0-9]/m", "", $request->input("user_point.{$i}", 0));
+                $user_info["user_married"] = $request->input("user_married.{$i}");
+                $user_info["user_remark"] = $request->input("user_remark.{$i}");
+                $user_info["user_zip"] = $request->input("user_zip.{$i}");
+                $user_info["user_addr"] = $request->input("user_addr.{$i}");
+                $user_info["user_addr_detail"] = $request->input("user_addr_detail.{$i}");
+                // user_order
+                $order = $user->getLastOrder();
+                $user_info["user_order"] = $order + 1;
 
                 $user_idx = $user->saveUser($user_info);
 
@@ -372,8 +334,8 @@ class TestUserController extends Controller
                 }
 
                 // 파일 DB 저장
-                if (!empty($request->file("user_file")[$key])) {
-                    $this->fileSave($request->file("user_file")[$key], $user_idx);
+                if (!empty($request->file("user_file")[$i])) {
+                    $this->fileSave($request->file("user_file")[$i], $user_idx);
                 }
             }
             DB::commit();
@@ -516,7 +478,7 @@ class TestUserController extends Controller
         DB::beginTransaction();
         try {
             $queryStr = $request->query();
-            array_shift($queryStr);
+            unset($queryStr["route"]);
 
             $user = new TestUser();
             $now = new \DateTime();
@@ -605,7 +567,7 @@ class TestUserController extends Controller
         DB::beginTransaction();
         try {
             $queryStr = $request->query();
-            array_shift($queryStr);
+            unset($queryStr["route"]);
 
             $user = new TestUser();
             $user->delUser($id);

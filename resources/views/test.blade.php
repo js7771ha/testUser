@@ -84,4 +84,79 @@ $results = array();
 foreach ($objects as $name=>$object)
     $results[$name] = $object->test();
 
-dd($results);
+//dd($results);
+
+
+
+
+class StaticParent {
+    static    $parent_only;
+    static    $both_distinct;
+
+    function __construct() {
+        static::$parent_only = 'fromparent';
+        static::$both_distinct = 'fromparent';
+    }
+}
+
+class StaticChild extends staticparent {
+    static    $child_only;
+    static    $both_distinct;
+
+    function __construct() {
+        static::$parent_only = 'fromchild';
+        static::$both_distinct = 'fromchild';
+        static::$child_only = 'fromchild';
+    }
+}
+
+$a = new StaticChild;
+
+$results[0] = array(
+    'Parent: parent_only    = ' => StaticParent::$parent_only,          // fromchild
+    'Parent: both_distinct  = ' => StaticParent::$both_distinct,        // fromparent
+    'Child : parent_only    = ' => StaticChild::$parent_only,           // fromchild
+    'Child : both_distinct  = ' => StaticChild::$both_distinct,         // fromchild
+    'Child : child_only     = ' => StaticChild::$child_only,            // fromchild
+);
+
+$a = new StaticParent;
+
+$results[1] = array(
+    'Parent: parent_only    = ' => StaticParent::$parent_only,          // fromchild
+    'Parent: both_distinct  = ' => StaticParent::$both_distinct,        // fromparent
+    'Child : parent_only    = ' => StaticChild::$parent_only,           // fromchild
+    'Child : both_distinct  = ' => StaticChild::$both_distinct,         // fromchild
+    'Child : child_only     = ' => StaticChild::$child_only,            // fromchild
+);
+
+//dd($results);
+
+
+class Aclass {
+    const MY_CONST = 1;
+    static $my_static = 'a';
+    public function my_const_self() {
+        return self::MY_CONST;
+    }
+    public function my_const_static() {
+        return static::MY_CONST;
+    }
+    public function my_static_self() {
+        return self::$my_static;
+    }
+    public function my_static_static() {
+        return static::$my_static;
+    }
+}
+
+class Bclass extends Aclass {
+    const MY_CONST = 2;
+    static $my_static = 'b';
+}
+
+$b = new Bclass();
+echo $b->my_const_self();           // 1
+echo $b->my_const_static();         // 2
+echo $b->my_static_self();          // a
+echo $b->my_static_static();        // b

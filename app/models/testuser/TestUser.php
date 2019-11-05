@@ -15,19 +15,13 @@ class TestUser extends Model
     public $timestamps = false;
 
     /**
-     * 리스트 페이지 전체 유저 목록
+     * 유저 리스트
      *
-     * @param String $state
-     * @param array $search
+     * @param array $conditions
      * @return Model
      */
-    public function getList(String $state, array $search=[])
+    public function getList(array $conditions=[])
     {
-        // all list
-        if ($state == "") {
-            abort(404);
-        }
-
         $listModel = $this->select(
             "user_idx",
             "user_state",
@@ -42,42 +36,73 @@ class TestUser extends Model
             "user_point",
             "created_at",
             "user_order"
-        );
-
-        if($state === "del_except_list") {
-
-//            dd($search);
-            $listModel = $listModel
-                            // 계정 상태
-                            ->wherein("user_state", $search["user_state"])
-                            // 성별
-                            ->when($search["user_gender"] != "all", function ($listmodel) use ($search) {
-                                $listmodel->where("user_gender", $search["user_gender"]);
-                            })
-                            // 검색어
-                            ->when(isset($search["search_select"]) && count($search["search_select"]) > 0 && !empty($search["search_select"][0]), function ($listmodel) use ($search) {
-                                $listmodel->where(function ($listmodel) use ($search) {
-                                    $listmodel->where($search["search_select"][0], "like", "%{$search["search_input"][0]}%");
-                                    if (isset($search["search_select"][1]) && $search["search_select"][1] != "") {
-                                        $listmodel->orwhere($search["search_select"][1], "like", "%{$search["search_input"][1]}%");
-                                    }
-                                });
-                            })
-                            // 정렬
-                            ->when($search["search_date"]["from_date"] != "" && $search["search_date"]["to_date"] != "", function ($listmodel) use ($search) {
-                                $listmodel->whereBetween("created_at", $search["search_date"]);
-                            })
-                            ->when($search["order_type"] != "" && $search["order_style"] != "", function ($listmodel) use ($search) {
-                                $listmodel->orderby($search["order_type"], $search["order_style"]);
-                            });
-
-        } else if ($state === "del_list") {
-            $listModel = $listModel->where("user_state", "=", "0");
-        } else {
-            abort(404);
-        }
+        )
+            // 계정 상태
+            ->wherein("user_state", $conditions["user_state"])
+            // 성별
+            ->when($conditions["user_gender"] !== "all", function ($listModel) use ($conditions) {
+                $listModel->where("user_gender", $conditions["user_gender"]);
+            })
+            // 검색어
+            ->when($conditions["search_type"][0] !== "", function ($listModel) use ($conditions) {
+                $listModel->where(function ($listModel) use ($conditions) {
+                    // 검색어 1
+                    if (!is_null($conditions["search_keyword"][0]) && $conditions["search_keyword"][0] !== "") {
+                        $conditions["en_search_keyword"][0] = encrypt($conditions["search_keyword"][0]);
+                    }
+                    $listModel->where("{$conditions["search_type"][0]}", "like", "%{$conditions["en_search_keyword"][0]}%");
+                    // 검색어 2
+                    if (!is_null($conditions["search_keyword"][1]) && $conditions["search_keyword"][1] !== "") {
+                        $conditions["en_search_keyword"][1] = encrypt($conditions["search_keyword"][1]);
+                    }
+                    if ($conditions["search_type"][1] !== "") {
+                        $listModel->orwhere($conditions["search_type"][1], "like", "%{$conditions["en_search_keyword"][1]}%");
+                    }
+                });
+            })
+            // 가입일 from_date
+            ->when(!is_null($conditions["search_date"]["from_date"]) && $conditions["search_date"]["from_date"] !== "", function ($listModel) use ($conditions) {
+                $listModel->where("created_at", ">=", DB::raw("date_format('{$conditions["search_date"]["from_date"]}', '%Y-%m-%d')"));
+            })
+            // 가입일 to_date
+            ->when(!is_null($conditions["search_date"]["to_date"]) && $conditions["search_date"]["to_date"] !== "", function ($listModel) use ($conditions) {
+                $listModel->where("created_at", "<=", DB::raw("addtime(date_format('{$conditions["search_date"]["to_date"]}', '%Y-%m-%d 00:00:00'), '23:59:59')"));
+            })
+            // 정렬
+            ->when($conditions["order_type"] !== "" && $conditions["order_style"] !== "", function ($listModel) use ($conditions) {
+                $listModel->orderby($conditions["order_type"], $conditions["order_style"]);
+            });
 
         return $listModel;
+    }
+
+
+    /**
+     * 탈퇴회원 리스트
+     *
+     * @return mixed
+     */
+    public function getLeaveList()
+    {
+        $leaveList = $this->select(
+            "user_idx",
+            "user_state",
+            "user_name",
+            "user_id",
+            "user_pwd",
+            "user_age",
+            "user_gender",
+            "user_email",
+            "user_tel",
+            "user_married",
+            "user_point",
+            "created_at",
+            "user_order"
+        )
+            ->where("user_state", "=", "0")
+            ->get();
+
+        return $leaveList;
     }
 
     /**
@@ -87,11 +112,11 @@ class TestUser extends Model
      * @param array $search
      * @return int listModelCount
      */
-    public function getUserListModelCount(String $state, array $search=[])
+    public function getCount(array $search=[])
     {
         // 검색 리스트 카운트
 
-        $listModelCount = $this->getUserListModel($state, $search)->get()->count();
+        $listModelCount = $this->getList($search)->get()->count();
 
         return $listModelCount;
     }
@@ -357,15 +382,15 @@ class TestUser extends Model
     }
 
     /**
-     * 계정 count (user_order 에 쓰임)
+     * 저장된 데이터중 제일 마지막 user_order 번호 가져오기
      *
      * @param array $state
      * @return mixed
      */
-    public function getCountStateUseSave()
+    public function getLastOrder()
     {
-        $count = $this->select("user_idx")->get()->count();
-        return $count;
+        $order = $this->orderby("user_order", "desc")->value("user_order");
+        return $order;
     }
 
     /**

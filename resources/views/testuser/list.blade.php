@@ -41,7 +41,7 @@
                         <option value="user_id">아이디</option>
                         <option value="user_email">이메일</option>
                     </select>
-                    <input type="text" id="search_keyword1" name="search_keyword[]" class="form-control search_keyword" value="{{ $search["search_keyword"][0] }}" style="width: 200px;display: inline-block;">
+                    <input type="text" id="search_keyword1" name="search_keyword[]" class="form-control search_keyword" value="{{ $results["conditions"]["search_keyword"][0] }}" style="width: 200px;display: inline-block;">
                 </td>
             </tr>
             <tr>
@@ -52,7 +52,7 @@
                         <option value="user_id">아이디</option>
                         <option value="user_email">이메일</option>
                     </select>
-                    <input type="text" id="search_keyword2" name="search_keyword[]" class="form-control search_keyword" value="{{ $search["search_keyword"][1] }}" style="width: 200px;display: inline-block;">
+                    <input type="text" id="search_keyword2" name="search_keyword[]" class="form-control search_keyword" value="{{ $results["conditions"]["search_keyword"][1] }}" style="width: 200px;display: inline-block;">
                 </td>
             </tr>
             <tr>
@@ -99,9 +99,9 @@
                 </th>
                 <td align="left">
                     <div class="input-daterange input-group" id="datepicker" style="width:400px;">
-                        <input type="text" id="from_date" name="from_date" class="input-sm form-control" value="{{ $search["search_date"]["from_date"] }}">
+                        <input type="text" id="from_date" name="from_date" class="input-sm form-control" value="{{ $results["conditions"]["search_date"]["from_date"] }}">
                         <span class="input-group-addon">&nbsp;~&nbsp;</span>
-                        <input type="text" id="to_date" name="to_date" class="input-sm form-control" value="{{ $search["search_date"]["to_date"] }}">
+                        <input type="text" id="to_date" name="to_date" class="input-sm form-control" value="{{ $results["conditions"]["search_date"]["to_date"] }}">
                     </div>
                 </td>
             </tr>
@@ -133,7 +133,7 @@
                 </td>
             </tr>
             <tr>
-                <td align="left" style="border-right: hidden;vertical-align: bottom;">조회된 건수 : {{ $user_list_count }}</td>
+                <td align="left" style="border-right: hidden;vertical-align: bottom;">조회된 건수 : {{ $results["data"]["count_list"] }}</td>
                 <td align="right">
                     <a href="{{ route("testuser_create") }}" id="create_btn" class="btn btn-primary">유저 등록</a>
                     <a href="#" id="all_destroy" class="btn btn-danger">일괄 탈퇴</a>
@@ -170,28 +170,32 @@
         </tr>
         </thead>
         <tbody>
-        @if(!is_null($user_list) && $user_list->count() > 0)
-            @foreach($user_list as $key => $list)
-                <tr class="tr_row" @if($list->user_state=="2") style="background-color: yellowgreen" @endif>
+        @if(!is_null($results["list"]) && $results["list"]->count() > 0)
+            @foreach($results["list"] as $key => $row)
+                <tr class="tr_row" @if($row->user_state=="2") style="background-color: yellowgreen" @endif>
                     <td><input type="checkbox" name="list_select"></td>
-                    <td class="list_num">{{ ($user_list->total() - ( $user_list->total() - (($user_list->currentPage()-1) * $user_list->perPage() + ($key+1)) )) }}</td>
-{{--                    <td>{{ $list->user_order }}</td>--}}
-                    <td class="td_col">{{ $list->user_idx }}</td>
-                    <td>@if($list->user_state=="1") 사용 @elseif($list->user_state=="2") 휴면 @else - @endif</td>
-                    <td><span class="list_user_name" onclick="list_user_name_click('{{ $list->user_idx }}')" style="cursor:pointer;">{{ $list->user_name }}</span></td>
-                    <td>{{ $list->user_id }}</td>
-                    <td>{{ $list->user_gender=="1" ? "남자" : "여자" }}</td>
-                    <td>{{ $list->user_age }}</td>
-                    <td>{{ $list->user_tel }}</td>
-                    <td>{{ $list->user_email }}</td>
-                    <td>{{ number_format($list->user_point) }}</td>
-                    <td>{{ $list->created_at }}</td>
-                    <td><input type="button" name="modify_btn" class="btn btn-success" value="수정" onclick="modify_btn_click('{{ $list->user_idx }}')"></td>
-                    <td><input type="button" name="del_btn" class="btn btn-danger" value="탈퇴" onclick="del_btn_click('{{ $list->user_idx }}')"></td>
-{{--                    <td><input type="button" name="del_btn" class="btn btn-danger" value="탈퇴" onclick="del_click({{ $list->user_idx }})"></td>--}}
+                    <td class="list_num">
+                        {{ ($results["list"]->total() - ( $results["list"]->total() -
+                            (($results["list"]->currentPage()-1) * $results["list"]->perPage() + ($key+1)) ))
+                        }}
+                    </td>
+                    <td class="td_col">{{ $row->user_idx }}</td>
+                    <td>@if($row->user_state=="1") 사용 @elseif($list->user_state=="2") 휴면 @else - @endif</td>
+                    <td><span class="list_user_name" onclick="list_user_name_click('{{ $row->user_idx }}')" style="cursor:pointer;">{{ $row->user_name }}</span></td>
+                    <td>{{ $row->user_id }}</td>
+                    <td>{{ $row->user_gender=="1" ? "남자" : "여자" }}</td>
+                    <td>{{ $row->user_age }}</td>
+                    <td>{{ $row->user_tel }}</td>
+                    <td>{{ $row->user_email }}</td>
+                    <td>{{ number_format($row->user_point) }}</td>
+                    <td>{{ $row->created_at }}</td>
+                    <td><input type="button" name="modify_btn" class="btn btn-success" value="수정" onclick="modify_btn_click('{{ $row->user_idx }}')"></td>
+                    <td><input type="button" name="del_btn" class="btn btn-danger" value="탈퇴" onclick="del_btn_click('{{ $row->user_idx }}')"></td>
                     <td>
-                        <input type="button" name="up_btn" class="btn-sm btn-outline-warning up_btn" value="▲" onclick="up_index_click($(this), '{{ $list->user_order }}', '{{ $list->user_idx }}', '{{ $key+1 }}')">
-                        <input type="button" name="down_btn" class="btn-sm btn-outline-warning down_btn" value="▼" onclick="down_index_click($(this), '{{ $list->user_order }}', '{{ $list->user_idx }}', '{{ $user_list->perPage() }}', '{{ $key+1 }}', '{{ $user_list->total() }}')">
+                        <input type="button" name="up_btn" class="btn-sm btn-outline-warning up_btn" value="▲"
+                               onclick="up_index_click($(this), '{{ $row->user_order }}', '{{ $row->user_idx }}', '{{ $key+1 }}')">
+                        <input type="button" name="down_btn" class="btn-sm btn-outline-warning down_btn" value="▼"
+                               onclick="down_index_click($(this), '{{ $row->user_order }}', '{{ $row->user_idx }}', '{{ $results["list"]->perPage() }}', '{{ $key+1 }}', '{{ $results["list"]->total() }}')">
                     </td>
                 </tr>
             @endforeach
@@ -205,7 +209,7 @@
         </tbody>
     </table>
     <div id="paging">
-        {{ $user_list
+        {{ $results["list"]
             ->appends([
                 'search_type'=>request()->search_type,
                 'search_keyword'=>request()->search_keyword,
@@ -246,16 +250,16 @@
         </tr>
         <tr>
             <td>
-                {{ $count_all["state"]["all"] }}명
+                {{ $results["data"]["state"]["all"] }}명
             </td>
             <td>
-                {{ $count_all["state"]["account"] }}명
+                {{ $results["data"]["state"]["account"] }}명
             </td>
             <td>
-                {{ $count_all["state"]["dormancy"] }}명
+                {{ $results["data"]["state"]["dormancy"] }}명
             </td>
             <td>
-                {{ $count_all["state"]["leaveAccount"] }}명
+                {{ $results["data"]["state"]["leaveAccount"] }}명
             </td>
         </tr>
         <tr>
@@ -271,10 +275,10 @@
         </tr>
         <tr>
             <td>
-                {{ $count_all["gender"]["male"] }}명
+                {{ $results["data"]["gender"]["male"] }}명
             </td>
             <td>
-                {{ $count_all["gender"]["female"] }}명
+                {{ $results["data"]["gender"]["female"] }}명
             </td>
         </tr>
         <tr>
@@ -299,19 +303,19 @@
         </tr>
         <tr>
             <td>
-                {{ $count_all["age"]["teen"] }}명
+                {{ $results["data"]["age"]["10"] }}명
             </td>
             <td>
-                {{ $count_all["age"]["two_three"] }}명
+                {{ $results["data"]["age"]["20~30"] }}명
             </td>
             <td>
-                {{ $count_all["age"]["four_five"] }}명
+                {{ $results["data"]["age"]["40~50"] }}명
             </td>
             <td>
-                {{ $count_all["age"]["six"] }}명
+                {{ $results["data"]["age"]["60"] }}명
             </td>
             <td>
-                {{ $avg_age }}세
+                {{ $results["data"]["avg_age"] }}세
             </td>
         </tr>
         <tr>
@@ -333,16 +337,16 @@
         </tr>
         <tr>
             <td>
-                {{ $count_all["point"]["1000"] }}명
+                {{ $results["data"]["count_point"]["1000"] }}명
             </td>
             <td>
-                {{ $count_all["point"]["9999"] }}명
+                {{ $results["data"]["count_point"]["9999"] }}명
             </td>
             <td>
-                {{ $count_all["point"]["10000"] }}명
+                {{ $results["data"]["count_point"]["10000"] }}명
             </td>
             <td>
-                {{ number_format($total_point) }}원
+                {{ number_format($results["data"]["total_point"]) }}원
             </td>
         </tr>
         </tbody>
@@ -447,8 +451,8 @@
         }
 
         // 검색어 selected
-        @if(isset($search["search_type"]) && count($search["search_type"]) > 0)
-            @foreach($search["search_type"] as $key => $item)
+        @if(isset($results["conditions"]["search_type"]) && count($results["conditions"]["search_type"]) > 0)
+            @foreach($results["conditions"]["search_type"] as $key => $item)
                 $("#search_type1 option").each(function() {
                     if("{{ $key }}" === "0" && "{{ $item }}" === $(this).val()) {
                         $(this).prop("selected", true);
@@ -465,9 +469,9 @@
         @endif
 
         // 상태 checked
-        @if(isset($search["user_state"]) && count($search["user_state"]) > 0)
+        @if(isset($results["conditions"]["user_state"]) && count($results["conditions"]["user_state"]) > 0)
             $(".user_state").each(function() {
-                @foreach($search["user_state"] as $state)
+                @foreach($results["conditions"]["user_state"] as $state)
                     if("{{ $state }}" === $(this).val() && $(this).attr("id") === "state1") {
                         $(".user_state").prop("checked", true);
                     } else if ("{{ $state }}" === $(this).val() && $(this).attr("id") !== "state1") {
@@ -480,9 +484,9 @@
         @endif
 
         // 성별 checked
-        @if(isset($search["user_gender"]) && $search["user_gender"] !== "")
+        @if(isset($results["conditions"]["user_gender"]) && $results["conditions"]["user_gender"] !== "")
             $("input[name='user_gender']").each(function() {
-                if("{{ $search["user_gender"] }}" === $(this).val()) {
+                if("{{ $results["conditions"]["user_gender"] }}" === $(this).val()) {
                     $(this).prop("checked", true);
                     return false;
                 }
@@ -490,9 +494,9 @@
         @endif
 
         // 정렬 타입 selected
-        @if(isset($search["order_type"]) && $search["order_type"] !== "")
+        @if(isset($conditions["order_type"]) && $conditions["order_type"] !== "")
             $("#order_type > option").each(function() {
-                if("{{ $search["order_type"] }}" === $(this).val()) {
+                if("{{ $conditions["order_type"] }}" === $(this).val()) {
                     $(this).prop("selected", true);
                     return false;
                 }
@@ -500,9 +504,9 @@
         @endif
 
         // 정렬 방식 selected
-        @if(isset($search["order_style"]) && $search["order_style"] !== "")
+        @if(isset($results["conditions"]["order_style"]) && $results["conditions"]["order_style"] !== "")
             $("#order_style > option").each(function() {
-                if("{{ $search["order_style"] }}" === $(this).val()) {
+                if("{{ $results["conditions"]["order_style"] }}" === $(this).val()) {
                     $(this).prop("selected", true);
                     return false;
                 }
@@ -511,7 +515,7 @@
 
         // 페이지 개수 selected
         $("#perpage > option").each(function () {
-            if ("{{ $perpage }}" === $(this).val()) {
+            if ("{{ $results["conditions"]["perpage"] }}" === $(this).val()) {
                 $(this).prop("selected", true);
                 return false;
             }
@@ -524,7 +528,7 @@
 
         // 부트스트랩 달력 설정 (1번째 입력)
         $(".input-daterange").datepicker({
-            format: 'yyyy/mm/dd'
+            format: 'yyyy-mm-dd'
         });
 
         // 모든 계정 클릭 시 전부 체크 혹은 체크 해제
@@ -595,8 +599,8 @@
 
         // 초기화 버튼 클릭 시
         $("#reset_btn").click(function() {
-            $("#search_type").find("option:eq(0)").prop("selected", true);
-            $("#search_keyword").val("");
+            $(".search_type").find("option:eq(0)").prop("selected", true);
+            $(".search_keyword").val("");
             $(".user_state").each(function() {
                 $(this).prop("checked", false);
             });

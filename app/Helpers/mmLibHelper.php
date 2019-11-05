@@ -122,42 +122,52 @@ class mmLibHelper
 
 
     /**
-     * @param $no
-     * @return bool
-     * @desc 입력받은 사업자등록번호의 유효성검사 appServiceProvider 에서 Validitior::extend 됨
+     * @brief   aes-256-cbc 암호화
+     * @params  $message = 인코딩할 텍스트
+     * @params  $key = 인크립트 키
+     * @params  $openKey = 공개키
+     * @return  $iv.$chiphertext 암호화문자열
+     * @throws  object Exception
+     * @author  freshsms
+     * @date    2019-03-11
+     * @bug     미확인
+     * @todo
      */
-    public static function chkLicenseNo($no)
+
+    public static function encrypt($message, $key, $openKey)
     {
-        if (!trim($no)) {
-            return false;
+        if (mb_strlen($key, '8bit') !== 32) {
+            throw new \Exception("Needs a 256-bit key!");
         }
-
-        $no = str_replace("-", "", $no);
-
-        if (strlen($no) != 10) {
-            return false;
-        }
-
-        $num = str_split(preg_replace('/[^0-9]/', '', $no));
-        $att = 0;
-        $sum = 0;
-        $arr = array(1, 3, 7, 1, 3, 7, 1, 3, 5);
-        foreach ($arr as $index => $value) {
-            $sum += $num[$index] * $value;
-        }
-
-        $sum += intval(($num[8] * 5) / 10);
-        $at = $sum % 10;
-
-        if ($at != 0) {
-            $att = 10 - $at;
-        }
-
-        if ($num[9] != $att) {
-            return false;
-        } else {
-            return true;
-        }
+//        $ivsize = openssl_cipher_iv_length('aes-256-cbc');
+//        $iv = openssl_random_pseudo_bytes($ivsize);
+        $ciphertext = openssl_encrypt($message, 'aes-256-cbc', $key, OPENSSL_RAW_DATA, $openKey);
+        return $openKey . $ciphertext;
     }
+
+    /**
+     * @brief   aes-256-cbc 복호화
+     * @param string $message = 디코딩할 텍스트
+     * @param string $key = 인크립트 키
+     * @return  string $decrypted 복호화된문자열
+     * @throws  object Exception
+     * @author  freshsms
+     * @date    2019-03-11
+     * @bug     미확인
+     * @todo    인증실패 공백문자 trim 추가 (발생시마다)
+     */
+    public static function decrypt(string $message, string $key): string
+    {
+
+        if (mb_strlen($key, '8bit') !== 32) {
+            throw new \Exception("Needs a 256-bit key!");
+        }
+        $ivsize = openssl_cipher_iv_length('aes-256-cbc');
+        $iv = mb_substr($message, 0, $ivsize, '8bit');
+        $ciphertext = mb_substr($message, $ivsize, null, '8bit');
+        $decrypted = self::pkcs5_unpad(openssl_decrypt($ciphertext, 'aes-256-cbc', $key, OPENSSL_RAW_DATA | OPENSSL_NO_PADDING, $iv));
+        return $decrypted;
+    }
+
 
 }
