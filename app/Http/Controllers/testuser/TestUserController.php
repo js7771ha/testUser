@@ -12,23 +12,30 @@ use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 
+/**
+ * Class TestUserController
+ * @package App\Http\Controllers\testuser
+ */
 class TestUserController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @param \Illuminate\Http\Request $request
-     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
-     */
-
     const LEAVEACCOUNT = "0";
     const ACCOUNT = "1";
     const DORMANCY = "2";
+    private $userModel = "";
 
+// self::ACCOUNT, static::ACCOUNT, $this::ACCOUNT, TestUserController::ACCOUNT
+
+//$a = new TestuserController();
+//$b = $a::ACCOUNT;
+
+    /**
+     * TestUserController constructor.
+     */
     public function __construct()
     {
         // 유저 모델
         $this->userModel = new TestUser();
+
 
 
 //        $this->key = md5("password");       // encrypt 암호화 인크립트 키
@@ -66,6 +73,7 @@ class TestUserController extends Controller
         $conditions["search_keyword"][0] = $request->input("search_keyword.0", "");
         $conditions["search_keyword"][1] = $request->input("search_keyword.1", "");
 
+//        dd($conditions);
 //        // 검색 키워드가 있으면 암호화 (아이디, 이메일, 전화번호)
 //        if ($conditions["search_keyword"][0] !== "") {
 //            $conditions["en_search_keyword"][0] = base64_encode($conditions["search_keyword"][0]);
@@ -290,10 +298,10 @@ class TestUserController extends Controller
             "user_pwd.*" => "required",
             "user_gender.*" => "required",
             "user_age.*" => "required|integer",
-            "user_tel.*" => "required|Numeric",
+            "user_tel.*" => "required|numeric",
             "user_email.*" => "required|email",
             "user_point.*" => "required",
-            "user_zip.*" => "required|Numeric",
+            "user_zip.*" => "required|numeric",
             "user_file.*" => "mimes:jpeg,png,jpg|max:3072"
         ];
 
@@ -306,12 +314,12 @@ class TestUserController extends Controller
             "user_age.*.required" => "나이를 입력해주세요",
             "user_age.*.integer" => "나이는 숫자만 입력할 수 있습니다.",
             "user_tel.*.required" => "전화번호를 입력해주세요.",
-            "user_tel.*.integer" => "전화번호는 숫자만 입력할 수 있습니다.",
+            "user_tel.*.numeric" => "전화번호는 숫자만 입력할 수 있습니다.",
             "user_email.*.required" => "이메일을 입력해주세요.",
             "user_email.*.email" => "이메일 형식이 올바르지 않습니다.",
             "user_point.*.required" => "적립금을 입력해주세요.",
             "user_zip.*.required" => "우편번호를 입력해주세요.",
-            "user_zip.*.Numeric" => "우편번호는 숫자만 입력할 수 있습니다.",
+            "user_zip.*.numeric" => "우편번호는 숫자만 입력할 수 있습니다.",
             "user_file.*.mimes" => "등록할 수 없는 확장자 입니다. (jpg, png만 가능)",
             "user_file.*.max" => "3MB가 넘는 이미지는 등록할 수 없습니다."
         ];

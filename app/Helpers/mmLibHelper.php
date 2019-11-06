@@ -3,8 +3,6 @@
 namespace App\helpers;
 
 
-use App\Library\RestCall;
-
 /**
  * Class mmLibHelper
  * @package App\helpers

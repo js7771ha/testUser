@@ -22,6 +22,7 @@ class TestUser extends Model
      */
     public function getList(array $conditions=[])
     {
+
         $listModel = $this->select(
             "user_idx",
             "user_state",
@@ -49,6 +50,10 @@ class TestUser extends Model
                     // 검색어 1
                     $listModel->where("{$conditions["search_type"][0]}", "like", "%{$conditions["search_keyword"][0]}%");
 //                    $listModel->where("{$conditions["search_type"][0]}", "like", "%{$conditions["en_search_keyword"][0]}%");
+
+//                    and ( a or b)
+//                    and a or b
+//
                     // 검색어 2
                     if (!is_null($conditions["search_type"][1]) && $conditions["search_type"][1] !== "") {
                         $listModel->orwhere($conditions["search_type"][1], "like", "%{$conditions["search_keyword"][1]}%");
@@ -56,8 +61,9 @@ class TestUser extends Model
                 });
             })
             // 가입일 from_date
+
             ->when(!is_null($conditions["search_date"]["from_date"]) && $conditions["search_date"]["from_date"] !== "", function ($listModel) use ($conditions) {
-                $listModel->where("created_at", ">=", DB::raw("date_format('{$conditions["search_date"]["from_date"]}', '%Y-%m-%d')"));
+                $listModel->where("created_at", ">=", date('Y-m-d', strtotime($conditions["search_date"]["from_date"])));
             })
             // 가입일 to_date
             ->when(!is_null($conditions["search_date"]["to_date"]) && $conditions["search_date"]["to_date"] !== "", function ($listModel) use ($conditions) {
