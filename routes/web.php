@@ -14,6 +14,9 @@
 Route::get('/', function () {
     return view('test');
 });
+Route::get('/doc', function () {
+    return view('doc');
+});
 
 Route::get('/list', 'testuser\TestUserController@index')->name('testuser_index');                       // 리스트
 Route::get('/list/del', 'testuser\TestUserController@indexLeave')->name('testuser_indexdel');           // 삭제 리스트

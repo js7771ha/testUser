@@ -36,8 +36,6 @@ class TestUserController extends Controller
         // 유저 모델
         $this->userModel = new TestUser();
 
-
-
 //        $this->key = md5("password");       // encrypt 암호화 인크립트 키
 //        $this->openKey = "a1b2c3d4e5f6g7h8";    // encrypt 암호화 공개 키
     }
